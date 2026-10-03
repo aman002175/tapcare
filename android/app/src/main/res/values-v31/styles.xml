@@ -7,14 +7,12 @@
 
      Android 12 ALWAYS shows an icon in the splash — if
      `windowSplashScreenAnimatedIcon` is omitted it falls back to the app
-     launcher icon. So instead of deleting the attribute we point it at a
-     fully transparent drawable: the screen becomes just the blush background
-     and hands over to the Flutter splash with no icon flash.
+     launcher icon, and pointing it at a transparent drawable leaves a blank
+     pale screen that reads as a white flash.
 
-     The icon is NOT empty: an empty icon on a pale blush background looked
-     exactly like a blank white screen. It is the same gradient-circle heart the
-     Flutter splash draws, so the system splash and the in-app splash are one
-     continuous opening scene — no plain heart, no blank frame in between.
+     So the icon is the real thing: the same gradient-circle heart the Flutter
+     splash draws (`ic_tapcare_logo`). System splash and in-app splash are then
+     one continuous opening scene — no plain heart, no blank frame between them.
 
      NOTE: there is no `android:windowSplashScreenIconBackgroundSize`
      platform attribute — only `...IconBackgroundColor`. An earlier revision

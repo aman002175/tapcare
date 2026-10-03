@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TapCare heart for the launch screen.
+<!-- TapCare heart (flat, gradient) — kept as the launcher-icon source.
+
+     NOT used by the splash any more: the launch screen draws
+     `ic_tapcare_logo` (the same gradient circle the Flutter splash shows), and
+     this bare heart read as a second, plainer opening screen.
 
      Android 12 scales a splash-screen vector across the full splash icon mask
      (~240dp), so a heart drawn edge-to-edge in the 24x24 viewport renders as a
