@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -44,6 +46,12 @@ class _TapCareBootstrapState extends State<TapCareBootstrap> {
 
   bool _minElapsed = false;
 
+  /// Held so it can be cancelled on dispose. A bare `Future.delayed` cannot
+  /// be cancelled and keeps ticking after the widget is gone, which both
+  /// leaks and trips "A Timer is still pending even after the widget tree
+  /// was disposed" in widget tests.
+  Timer? _minSplashTimer;
+
   static Future<LocalStorage> _openStorage() async {
     final prefs = await SharedPreferences.getInstance();
     return LocalStorage(prefs);
@@ -52,9 +60,15 @@ class _TapCareBootstrapState extends State<TapCareBootstrap> {
   @override
   void initState() {
     super.initState();
-    Future<void>.delayed(minSplash, () {
+    _minSplashTimer = Timer(minSplash, () {
       if (mounted) setState(() => _minElapsed = true);
     });
+  }
+
+  @override
+  void dispose() {
+    _minSplashTimer?.cancel();
+    super.dispose();
   }
 
   @override
