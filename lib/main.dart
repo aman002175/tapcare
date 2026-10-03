@@ -14,15 +14,15 @@ import 'screens/stats_screen.dart';
 import 'screens/widget_mode_screen.dart';
 import 'services/storage_service.dart';
 import 'state/app_state.dart';
+import 'widgets/bear_art.dart';
 import 'widgets/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // NOTE: storage is intentionally *not* awaited here. Awaiting
-  // SharedPreferences before runApp() left the window showing the bare
-  // NormalTheme background (white) until the first Flutter frame — the
-  // "white screen on open". Boot into the splash instead and load in the
-  // background.
+  // NOTE: nothing is awaited before runApp(). Awaiting anything here keeps
+  // the *native* launch window on screen for longer, which is the blank flash
+  // before the Flutter splash — everything slow (storage, artwork probe) is
+  // kicked off behind the splash instead.
   runApp(const TapCareBootstrap());
 }
 
@@ -60,6 +60,11 @@ class _TapCareBootstrapState extends State<TapCareBootstrap> {
   @override
   void initState() {
     super.initState();
+    // Which Milk & Mocha artwork made it into this build. Runs behind the
+    // splash, so the app never asks for a file that is not in the bundle (a
+    // failed image load throws on every rebuild) without delaying the first
+    // frame. Not awaited: nothing on the opening screen depends on it.
+    unawaited(BearArt.probe());
     _minSplashTimer = Timer(minSplash, () {
       if (mounted) setState(() => _minElapsed = true);
     });

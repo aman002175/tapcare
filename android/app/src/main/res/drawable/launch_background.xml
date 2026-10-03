@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launch window background: blush only.
+<!-- Launch window for API 24-30: blush background + the TapCare logo.
 
-     The centred heart logo used to live here and, together with the Android
-     12 splash icon, produced a second "plain" opening screen before the real
-     text-based Flutter splash appeared. The heart is gone from the native
-     layer on purpose — the one and only opening screen is the Flutter splash
-     (gradient circle + "TapCare" + tagline). -->
+     The logo is the same gradient circle the Flutter splash draws, so the
+     hand-off from the native window to the in-app splash is invisible. (The old
+     flat pink heart here read as a second, plainer opening screen; the plain
+     blank window read as a white flash.) -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/tapcare_blush" />
+    <item
+        android:width="96dp"
+        android:height="96dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_tapcare_logo" />
 </layer-list>

@@ -6,94 +6,69 @@ import 'package:flutter/material.dart';
 import '../config/strings.dart';
 import '../design/romantic_tokens.dart';
 import '../models/bear_mood.dart';
-import 'heart_burst.dart';
+import 'bear_art.dart';
+import 'bear_rig.dart';
 
-/// Where the Milk & Mocha artwork lives.
-///
-/// The four illustrations are **not** re-drawn with Flutter shapes on purpose:
-/// hand-built bears look rough, and the point of these characters is that they
-/// look exactly like the artwork the user designed. The app therefore renders
-/// the real PNG the moment the files are present in `assets/characters/` (and
-/// declared in `pubspec.yaml`), and a soft placeholder until then — see
-/// `assets/characters/README.md`.
-class BearArt {
-  BearArt._();
+/// Small face shown in the corner bubble for each emotion.
+const Map<BearEmotion, String> kBearMoodEmojis = <BearEmotion, String>{
+  BearEmotion.sad: '🥺',
+  BearEmotion.sulky: '😕',
+  BearEmotion.calm: '😌',
+  BearEmotion.happy: '😊',
+  BearEmotion.loving: '💗',
+  BearEmotion.angry: '😤',
+};
 
-  /// The couple hugging/kissing — used for the "loving" mood and the kiss
-  /// reaction.
-  static const String kiss = 'assets/characters/milk_mocha_kiss.png';
+/// Artwork for a mood when nothing is being tapped.
+String bearArtFor(BearEmotion emotion) {
+  switch (emotion) {
+    case BearEmotion.loving:
+      return BearArt.kiss;
+    case BearEmotion.happy:
+      return BearArt.hearts;
+    case BearEmotion.calm:
+      return BearArt.gift;
+    case BearEmotion.angry:
+      return BearArt.hearts;
+    case BearEmotion.sulky:
+      return BearArt.gift;
+    case BearEmotion.sad:
+      // Waiting for the other one.
+      return BearArt.peek;
+  }
+}
 
-  /// The couple under a pile of hearts — happy / celebration.
-  static const String hearts = 'assets/characters/milk_mocha_hearts.png';
-
-  /// One bear offering a heart to the other — the gift reaction.
-  static const String gift = 'assets/characters/milk_mocha_gift.png';
-
-  /// The single bear peeking out — alone, waiting.
-  static const String peek = 'assets/characters/mocha_peek.png';
-
-  /// Artwork cycle played on every tap.
-  static const List<String> reactions = <String>[kiss, hearts, gift, peek];
-
-  /// Emoji that pops out with each tap reaction, same order as [reactions].
-  static const List<String> reactionEmojis = <String>['💗', '💕', '🎁', '🥺'];
-
-  /// Small face shown in the corner bubble for each emotion.
-  static const Map<BearEmotion, String> moodEmojis = <BearEmotion, String>{
-    BearEmotion.sad: '🥺',
-    BearEmotion.sulky: '😕',
-    BearEmotion.calm: '😌',
-    BearEmotion.happy: '😊',
-    BearEmotion.loving: '💗',
-    BearEmotion.angry: '😤',
+/// Localised one-liner describing the mood between the two of you.
+String bearCaption(Strings s, BearMoodReport mood) {
+  if (!mood.paired) return s.t('bearSolo');
+  final String key = switch (mood.pair) {
+    BearEmotion.loving => 'bearMoodLoving',
+    BearEmotion.happy => 'bearMoodHappy',
+    BearEmotion.calm => 'bearMoodCalm',
+    BearEmotion.sulky => 'bearMoodSulky',
+    BearEmotion.sad => 'bearMoodSad',
+    BearEmotion.angry => 'bearMoodAngry',
   };
-
-  /// Artwork for a mood when nothing is being tapped.
-  static String forEmotion(BearEmotion emotion) {
-    switch (emotion) {
-      case BearEmotion.loving:
-        return kiss;
-      case BearEmotion.happy:
-        return hearts;
-      case BearEmotion.calm:
-        return gift;
-      case BearEmotion.angry:
-        return hearts;
-      case BearEmotion.sulky:
-        return gift;
-      case BearEmotion.sad:
-        // Waiting for the other one.
-        return peek;
-    }
-  }
-
-  /// Localised one-liner describing the mood between the two of you.
-  static String caption(Strings s, BearMoodReport mood) {
-    if (!mood.paired) return s.t('bearSolo');
-    final String key = switch (mood.pair) {
-      BearEmotion.loving => 'bearMoodLoving',
-      BearEmotion.happy => 'bearMoodHappy',
-      BearEmotion.calm => 'bearMoodCalm',
-      BearEmotion.sulky => 'bearMoodSulky',
-      BearEmotion.sad => 'bearMoodSad',
-      BearEmotion.angry => 'bearMoodAngry',
-    };
-    return s.t(key);
-  }
+  return s.t(key);
 }
 
 /// Milk & Mocha — the couple's own little stage.
 ///
-/// The pair is never static: it breathes, sways, sulks, shakes when care is
-/// ignored, and reacts to taps. The emotion comes from
-/// [BearMoodEngine], which reads the real nudge history — nothing is faked or
-/// stored.
+/// The bears are not decoration and they do not burst: they walk their lane,
+/// breathe, glance at each other, blink, and turn their heads on the neck. The
+/// emotion comes from [BearMoodEngine] (real nudge history — nothing faked) and
+/// changes how fast they walk and how they hold themselves. Tapping makes them
+/// hop and "talk" back.
+///
+/// The characters themselves come from `assets/characters/` — see the README
+/// there for the flat artwork and the optional cut-out parts (head, eyes, lids,
+/// mouth, arm) that turn them into real puppets.
 class BearPair extends StatefulWidget {
   const BearPair({
     super.key,
     required this.mood,
     required this.locale,
-    this.artHeight = 148,
+    this.artHeight = 156,
   });
 
   final BearMoodReport mood;
@@ -105,66 +80,67 @@ class BearPair extends StatefulWidget {
 }
 
 class _BearPairState extends State<BearPair> with TickerProviderStateMixin {
-  /// Slow, looping "breathing" movement.
-  late final AnimationController _idle = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 3400),
-  )..repeat();
-
-  /// Played on every tap: the little hop.
+  /// The little hop when they are tapped.
   late final AnimationController _tap = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 620),
   );
 
-  /// Hearts that fly out on tap.
-  late final AnimationController _burst = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  );
-
-  /// One listener for both loops so the art rebuilds once per frame.
-  late final Listenable _motion = Listenable.merge(<Listenable>[_idle, _tap]);
-
   int _reaction = 0;
   bool _reacting = false;
+  bool _speaking = false;
   Timer? _reactTimer;
+  Timer? _speakTimer;
 
   @override
   void dispose() {
     _reactTimer?.cancel();
-    _idle.dispose();
+    _speakTimer?.cancel();
     _tap.dispose();
-    _burst.dispose();
     super.dispose();
   }
 
-  void _onTap() {
+  void _react() {
     _reactTimer?.cancel();
+    _speakTimer?.cancel();
     setState(() {
       _reacting = true;
+      _speaking = true;
       _reaction = (_reaction + 1) % BearArt.reactions.length;
     });
     _tap.forward(from: 0);
-    _burst.forward(from: 0);
+    _speakTimer = Timer(const Duration(milliseconds: 1800), () {
+      if (mounted) setState(() => _speaking = false);
+    });
     _reactTimer = Timer(const Duration(milliseconds: 1500), () {
       if (mounted) setState(() => _reacting = false);
     });
   }
 
-  String get _asset => _reacting
+  String get _art => _reacting
       ? BearArt.reactions[_reaction]
-      : BearArt.forEmotion(widget.mood.pair);
+      : bearArtFor(widget.mood.pair);
 
   String get _bubbleEmoji => _reacting
       ? BearArt.reactionEmojis[_reaction]
-      : BearArt.moodEmojis[widget.mood.pair] ?? '💗';
+      : kBearMoodEmojis[widget.mood.pair] ?? '💗';
 
   @override
   Widget build(BuildContext context) {
     final s = Strings(widget.locale);
     final mood = widget.mood;
 
+    // Rebuild once the artwork probe has finished, so the characters swap
+    // from the placeholder to the real artwork without waiting for a screen
+    // change.
+    return ValueListenableBuilder<bool>(
+      valueListenable: BearArt.ready,
+      builder: (BuildContext context, bool ready, Widget? child) =>
+          _card(s, mood),
+    );
+  }
+
+  Widget _card(Strings s, BearMoodReport mood) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
@@ -183,32 +159,49 @@ class _BearPairState extends State<BearPair> with TickerProviderStateMixin {
           SizedBox(
             height: widget.artHeight,
             child: Stack(
-              alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: <Widget>[
+                // The hop is layered over both characters: the two walk
+                // independently, but a tap lifts them together.
                 Positioned.fill(
-                  child: HeartBurst(
-                    controller: _burst,
-                    pieces: 14,
-                    emojis: const <String>['💗', '💛', '💕', '✨'],
-                  ),
-                ),
-                Positioned.fill(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _onTap,
-                    child: AnimatedBuilder(
-                      animation: _motion,
-                      builder: (BuildContext context, Widget? child) =>
-                          _MovingArt(
-                        emotion: mood.pair,
-                        tap: _tap.value,
-                        idle: _idle.value,
-                        child: child,
-                      ),
-                      child: _BearImage(
-                        asset: _asset,
-                        height: widget.artHeight,
-                      ),
+                  child: AnimatedBuilder(
+                    animation: _tap,
+                    builder: (BuildContext context, Widget? child) =>
+                        Transform.translate(
+                      offset: Offset(0, -10 * math.sin(_tap.value * math.pi)),
+                      child: child,
+                    ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: <Widget>[
+                        // Mocha walks behind, with a different phase so the
+                        // two never march in lockstep, and each looks at the
+                        // other.
+                        BearStage(
+                          emotion: mood.pair,
+                          art: _art,
+                          who: 'mocha',
+                          phaseOffset: 0.37,
+                          partnerSide: -1,
+                          laneStart: 0.30,
+                          laneEnd: 0.84,
+                          speaking: _speaking,
+                          onTap: _react,
+                          height: widget.artHeight,
+                        ),
+                        BearStage(
+                          emotion: mood.pair,
+                          art: _art,
+                          who: 'milk',
+                          phaseOffset: 0,
+                          partnerSide: 1,
+                          laneStart: 0.16,
+                          laneEnd: 0.70,
+                          speaking: _speaking,
+                          onTap: _react,
+                          height: widget.artHeight,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -217,12 +210,19 @@ class _BearPairState extends State<BearPair> with TickerProviderStateMixin {
                   right: 6,
                   child: _Bubble(emoji: _bubbleEmoji, animation: _tap),
                 ),
+                if (!BearArt.layered)
+                  const Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _ArtPlaceholder(),
+                  ),
               ],
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            BearArt.caption(s, mood),
+            bearCaption(s, mood),
             textAlign: TextAlign.center,
             style: Rom.body,
           ),
@@ -232,12 +232,12 @@ class _BearPairState extends State<BearPair> with TickerProviderStateMixin {
             children: <Widget>[
               _MoodChip(
                 label: s.t('mineLabel'),
-                emoji: BearArt.moodEmojis[mood.mine] ?? '💗',
+                emoji: kBearMoodEmojis[mood.mine] ?? '💗',
               ),
               const SizedBox(width: 8),
               _MoodChip(
                 label: s.t('partnerDefault'),
-                emoji: BearArt.moodEmojis[mood.theirs] ?? '💗',
+                emoji: kBearMoodEmojis[mood.theirs] ?? '💗',
               ),
             ],
           ),
@@ -247,107 +247,21 @@ class _BearPairState extends State<BearPair> with TickerProviderStateMixin {
   }
 }
 
-/// Applies the idle breathing + the tap hop. Pure transform, no repaint cost
-/// beyond this subtree.
-class _MovingArt extends StatelessWidget {
-  const _MovingArt({
-    required this.emotion,
-    required this.tap,
-    required this.idle,
-    required this.child,
-  });
-
-  final BearEmotion emotion;
-  final double tap;
-  final double idle;
-  final Widget? child;
-
-  @override
-  Widget build(BuildContext context) {
-    final wave = math.sin(idle * math.pi * 2);
-
-    // Resting pose per emotion; the tap hop is layered on top of it.
-    double dy = 4 * wave;
-    double angle = 0.02 * wave;
-    double scale = 1;
-    double opacity = 1;
-
-    if (emotion == BearEmotion.sad) {
-      dy += 8;
-      angle = -0.05 + 0.03 * wave;
-      opacity = 0.82;
-    } else if (emotion == BearEmotion.sulky) {
-      dy += 5;
-      angle = -0.045 + 0.02 * wave;
-    } else if (emotion == BearEmotion.happy) {
-      dy -= 3;
-      scale = 1.02;
-    } else if (emotion == BearEmotion.loving) {
-      dy -= 5;
-      scale = 1.03;
-    } else if (emotion == BearEmotion.angry) {
-      // Nervous, angry little shake.
-      final shake = math.sin(idle * math.pi * 8);
-      dy = shake * 5;
-      angle = 0.07 * shake;
-    }
-
-    // Tap hop: 0 -> peak -> 0 over the tap controller.
-    final hop = math.sin(tap * math.pi);
-    dy -= 14 * hop;
-    scale += 0.06 * hop;
-
-    return Transform.translate(
-      offset: Offset(0, dy),
-      child: Transform.rotate(
-        angle: angle,
-        child: Transform.scale(
-          scale: scale,
-          child: Opacity(opacity: opacity, child: child),
-        ),
-      ),
-    );
-  }
-}
-
-class _BearImage extends StatelessWidget {
-  const _BearImage({required this.asset, required this.height});
-
-  final String asset;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      asset,
-      height: height,
-      fit: BoxFit.contain,
-      errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
-          _ArtPlaceholder(height: height),
-    );
-  }
-}
-
 /// Shown only while the artwork files are missing from `assets/characters/`.
 /// Never used once the PNGs are added.
 class _ArtPlaceholder extends StatelessWidget {
-  const _ArtPlaceholder({required this.height});
-
-  final double height;
+  const _ArtPlaceholder();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.circular(Rom.rLg),
-          ),
-          child: const Text('🐻  🐻', style: TextStyle(fontSize: 40)),
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(Rom.rLg),
         ),
+        child: const Text('🐻  🐻', style: TextStyle(fontSize: 40)),
       ),
     );
   }

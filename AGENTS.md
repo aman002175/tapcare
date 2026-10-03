@@ -33,7 +33,8 @@ lib/
   screens/                # onboarding, home, pair, send_nudge, overlay, settings,
                           # stats, share_card, widget_mode
   widgets/                # romance_motion (mesh bg, floating hearts, fade-in, heartbeat)
-                          # bear_pair (Milk & Mocha cartoon couple + tap reactions)
+                          # bear_pair (Milk & Mocha card), bear_rig (living puppet
+                          # stage + pose maths), bear_art (artwork catalogue)
                           # heart_burst + shine button, romantic_scaffold,
                           # nudge_overlay (signature animation), splash_screen, theme_card
   themes/widget_themes.dart
