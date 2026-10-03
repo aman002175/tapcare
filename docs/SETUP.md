@@ -42,17 +42,29 @@ The **only** credential needed is a GitHub token with `repo`
 (or fine-grained **Contents: Read and write**):
 
 ```sh
-git remote add origin https://github.com/<owner>/<repo>.git
+# 0) workflow triggers on `main` — make sure that is your branch
+git branch -M main
+
+# 1) commit everything
 git add -A
 git commit -m "NudgeBuddy: Flutter app + docs + APK workflow"
-git push -u origin main \
-  -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
+
+# 2) remote
+git remote add origin https://github.com/<owner>/<repo>.git
+
+# 3) push with the token ONLY (single line — no line-continuation backslashes,
+#    and `-c` is a git-level option so it comes BEFORE the subcommand)
+git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)" push -u origin main
 ```
 
-Equivalent URL form (never commit this URL — set it ad-hoc):
+Simplest alternative (works in terminals that mangle multi-line pastes):
 
-```text
-https://x-access-token:<GITHUB_TOKEN>@github.com/<owner>/<repo>.git
+```sh
+export GITHUB_TOKEN=ghp_xxxxxxxx
+git remote set-url origin "https://x-access-token:$GITHUB_TOKEN@github.com/<owner>/<repo>.git"
+git push -u origin main
+git remote set-url origin https://github.com/<owner>/<repo>.git   # drop the token
+unset GITHUB_TOKEN
 ```
 
 - Never commit or echo the token; never put it in the workflow file.
