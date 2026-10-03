@@ -38,7 +38,13 @@ dependencies:
   go_router: ^17.2.3
   shared_preferences: ^2.5.5
   google_fonts: ^8.1.0
-  home_widget: ^0.10.0
+  # Pinned to the newest release that supports this project's Dart SDK.
+  # Flutter 3.35.5 ships Dart 3.9.2; home_widget 0.9.3+ declares
+  # `sdk: ^3.10.0` and therefore fails version solving here. 0.9.2+1 needs
+  # only Dart 3.5 and exposes the same saveWidgetData()/updateWidget() API.
+  # Raise this (and the Flutter pin in .github/workflows/build-apk.yml) only
+  # together, never on their own.
+  home_widget: ^0.9.2+1
 
 dev_dependencies:
   flutter_test:
