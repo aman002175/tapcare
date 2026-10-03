@@ -200,7 +200,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
 
                     // ---- loading ----
-                    SizedBox(height: 44),
+                    const SizedBox(height: 44),
                     Opacity(
                       opacity: loading,
                       child: _LoadingDots(controller: _dots),
