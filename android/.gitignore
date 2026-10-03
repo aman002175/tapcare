@@ -12,3 +12,11 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# The Gradle wrapper IS required to build the APK in CI (GitHub Actions),
+# so it must be committed even though Flutter's template ignores it.
+!/gradlew
+!/gradlew.bat
+!gradle-wrapper.jar
+!/gradle/wrapper/gradle-wrapper.jar
+!/gradle/wrapper/gradle-wrapper.properties
