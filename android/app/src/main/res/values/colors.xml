@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors Rom.blush in lib/design/romantic_tokens.dart. The native
+         window background MUST match the Flutter scaffold background,
+         otherwise Android shows a white frame before the first frame. -->
+    <color name="tapcare_blush">#FFFFF4F0</color>
+    <color name="tapcare_rose">#FFFF6E91</color>
+    <color name="tapcare_coral">#FFFF8A5B</color>
+    <color name="tapcare_ink">#FF4A2F3A</color>
+</resources>

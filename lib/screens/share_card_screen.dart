@@ -23,8 +23,8 @@ class ShareCardScreen extends ConsumerWidget {
     final accent = Rom.gradientByName(state.accentName);
 
     final cardText = state.locale == 'hi'
-        ? '$me 💗 $you\n${stats.totalNudges} नज़ · ${stats.streakDays} दिन की लय\nबिना बोले, ख्याल 💛\n— NudgeBuddy'
-        : '$me 💗 $you\n${stats.totalNudges} nudges · ${stats.streakDays}-day streak\nCare without words 💛\n— NudgeBuddy';
+        ? '$me 💗 $you\n${stats.totalNudges} नज़ · ${stats.streakDays} दिन की लय\nबिना बोले, ख्याल 💛\n— TapCare'
+        : '$me 💗 $you\n${stats.totalNudges} nudges · ${stats.streakDays}-day streak\nCare without words 💛\n— TapCare';
 
     return AnimatedMeshBackground(
       seed: (state.profile?.id.hashCode ?? 5) + 2,
@@ -112,7 +112,7 @@ class ShareCardScreen extends ConsumerWidget {
                                   fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 6),
-                            const Text('NudgeBuddy',
+                            const Text('TapCare',
                                 style: TextStyle(
                                     color: Colors.white70, fontSize: 13)),
                           ],

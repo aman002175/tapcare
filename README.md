@@ -1,4 +1,4 @@
-# NudgeBuddy 💛
+# TapCare 💛
 
 **बिना बोले, ख्याल** — a native Flutter Android app for couples and friends.
 One tap sends a tiny caring reminder ("पानी पी लो", "दवाई खा ली?", "घर
@@ -24,14 +24,22 @@ interfaces in `lib/services/backend_services.dart` are ready for them.
 - Onboarding: display name + avatar emoji (Hindi/English UI switch)
 - Pairing: 6-character invite code → exactly two people, one active pair
 - One-tap preset nudges (bilingual) + custom short messages
+- **Time-aware care**: a "Right now" row suggests the nudge that fits the
+  hour (morning water → evening *reach home* → night *rest*)
 - **Favorites**: long-press any preset to pin it; favorites get their own row
 - **Full-screen animated overlay** with floating hearts, heartbeat, glow card,
   haptics, and a heart-burst celebration on "Seen ❤️"
 - Recent nudges: last 20 per pair, seen/unseen badges — no chat, no feed
 - Long-press any recent nudge to replay the overlay
+- **Branded launch screen**: splash + pulsing heart + animated loading dots
+- **Real home-screen widget**: resizable (small ↔ large), animated reveal, and
+  it shows the partner's latest nudge, love meter, streak and daily quote.
+  Add it via *long-press home screen → Widgets → TapCare*.
 
 **Love dashboard**
-- **Love meter** (0–100%): balance + rhythm + acknowledgement, animated bar
+- **Love meter** (0–100%): care given + balance + rhythm + acknowledgement,
+  animated bar, with a full **breakdown** of what the score is made of
+- **This week in love**: rolling 7-day bar chart of who showed up
 - **Streak counter**: consecutive days with a nudge 🔥
 - **Together counter**: days/months since pairing
 - **Mood check-in**: one-tap daily mood (😊 🥰 😌 😔 😤 🤒)
@@ -52,6 +60,7 @@ interfaces in `lib/services/backend_services.dart` are ready for them.
 
 ```sh
 flutter pub get
+python3 scripts/verify.py   # imports + hi/en string keys + no stale ids
 flutter analyze
 flutter test
 flutter run          # device/emulator
@@ -64,7 +73,7 @@ flutter run -d chrome  # web preview
    is needed, no other URL or credentials).
 2. Open the repo → **Actions** → **Build Android APK**.
 3. After the run finishes, open the run → **Artifacts** →
-   **nudgebuddy-apk** → download the `.apk`.
+   **tapcare-apk** → download the `.apk`.
 
 ## Documentation
 

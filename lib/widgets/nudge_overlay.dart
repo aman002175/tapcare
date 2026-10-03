@@ -12,7 +12,7 @@ import 'heart_burst.dart';
 import 'romance_motion.dart';
 
 /// Full-screen animated overlay shown when a nudge arrives — the signature
-/// "one tap and care" moment of NudgeBuddy.
+/// "one tap and care" moment of TapCare.
 class NudgeOverlay extends StatefulWidget {
   const NudgeOverlay({
     super.key,

@@ -4,14 +4,14 @@
 
 ```text
 android/
-  app/build.gradle.kts     # namespace + applicationId com.nudgebuddy.app
+  app/build.gradle.kts     # namespace + applicationId com.tapcare.app
   gradle/wrapper/          # committed wrapper — CI needs it
 lib/                       # all Dart source (see AGENTS.md)
 pubspec.yaml
 .github/workflows/build-apk.yml
 ```
 
-- **applicationId / namespace:** `com.nudgebuddy.app`
+- **applicationId / namespace:** `com.tapcare.app`
 - **minSdk:** Flutter default (21+); set to 23+ if you enable newer APIs
 - **versionName / versionCode:** come from `pubspec.yaml`
   (`version: 1.0.0+1` → versionName `1.0.0`, versionCode `1`)
@@ -25,7 +25,7 @@ pubspec.yaml
 
 ## Where the APK lands
 
-- **CI:** Actions run → Artifacts → `nudgebuddy-apk`
+- **CI:** Actions run → Artifacts → `tapcare-apk`
   (`build/app/outputs/flutter-apk/app-debug.apk` inside the zip).
 - **Local:** `flutter build apk --debug` → same path.
 
@@ -35,8 +35,8 @@ Debug APKs are signed with the debug key — fine for sideloading/testing.
 For Play Store:
 
 ```sh
-keytool -genkey -v -keystore ~/nudgebuddy.keystore -keyalg RSA \
-  -keysize 2048 -validity 10000 -alias nudgebuddy
+keytool -genkey -v -keystore ~/tapcare.keystore -keyalg RSA \
+  -keysize 2048 -validity 10000 -alias tapcare
 ```
 
 Then in `android/key.properties` (git-ignored):
@@ -44,8 +44,8 @@ Then in `android/key.properties` (git-ignored):
 ```properties
 storePassword=...
 keyPassword=...
-keyAlias=nudgebuddy
-storeFile=/path/to/nudgebuddy.keystore
+keyAlias=tapcare
+storeFile=/path/to/tapcare.keystore
 ```
 
 Wire `signingConfigs` in `android/app/build.gradle.kts`, add the keystore as

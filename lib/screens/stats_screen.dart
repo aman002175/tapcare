@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/strings.dart';
 import '../data/romance_content.dart';
 import '../design/romantic_tokens.dart';
+import '../models/nudge.dart';
 import '../state/app_state.dart';
 import '../widgets/romance_motion.dart';
 
@@ -132,18 +133,24 @@ class StatsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text('⚖️ ${s.t('loveMeter')}', style: Rom.title),
+                      const SizedBox(height: 4),
+                      Text(stats.meterHint(state.locale), style: Rom.body),
                       const SizedBox(height: 14),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(999),
                         child: Row(
                           children: <Widget>[
+                            // Proportional to the real counts — the old code
+                            // used `(stats.mine * 100).clamp(1, 100)`, which
+                            // saturated at 100 for both sides and rendered
+                            // every ratio as an identical 50/50 bar.
                             Expanded(
-                              flex: (stats.mine * 100).clamp(1, 100),
+                              flex: stats.mineFlex,
                               child: Container(height: 14, color: Rom.coral),
                             ),
                             const SizedBox(width: 2),
                             Expanded(
-                              flex: (stats.theirs * 100).clamp(1, 100),
+                              flex: stats.theirsFlex,
                               child: Container(height: 14, color: Rom.rose),
                             ),
                           ],
@@ -164,6 +171,61 @@ class StatsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+
+              // love-meter breakdown — shows exactly what the % is made of
+              FadeSlideIn(
+                delayMs: 180,
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: Rom.glass(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('🔍 ${s.t('meterBreakdown')}', style: Rom.title),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${stats.loveMeter.round()}% · '
+                        '${stats.mine} ${s.t('nudgesSent')} / '
+                        '${stats.theirs} ${s.t('nudgesGot')}',
+                        style: Rom.body,
+                      ),
+                      const SizedBox(height: 14),
+                      _ScoreBar(
+                        emoji: '💛',
+                        label: s.t('careGiven'),
+                        value: stats.careScore,
+                        weight: '30%',
+                      ),
+                      _ScoreBar(
+                        emoji: '⚖️',
+                        label: s.t('balance'),
+                        value: stats.balanceScore,
+                        weight: '30%',
+                      ),
+                      _ScoreBar(
+                        emoji: '🔥',
+                        label: s.t('rhythm'),
+                        value: stats.rhythmScore,
+                        weight: '20%',
+                      ),
+                      _ScoreBar(
+                        emoji: '👀',
+                        label: s.t('acknowledged'),
+                        value: stats.ackScore,
+                        weight: '20%',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // weekly recap
+              FadeSlideIn(
+                delayMs: 220,
+                child: _WeeklyRecap(state: state, s: s),
               ),
               const SizedBox(height: 16),
 
@@ -299,6 +361,238 @@ class _StatTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// One row of the love-meter breakdown: label, weight and an animated bar.
+class _ScoreBar extends StatelessWidget {
+  const _ScoreBar({
+    required this.emoji,
+    required this.label,
+    required this.value,
+    required this.weight,
+  });
+
+  final String emoji;
+  final String label;
+  final double value;
+  final String weight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Text(emoji, style: const TextStyle(fontSize: 14)),
+              const SizedBox(width: 6),
+              Text(label, style: Rom.body),
+              const Spacer(),
+              Text(
+                '${(value * 100).round()}%',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Rom.rose,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                weight,
+                style: const TextStyle(fontSize: 10.5, color: Rom.inkSoft),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (BuildContext context, double v, Widget? _) =>
+                  LinearProgressIndicator(
+                value: v,
+                minHeight: 8,
+                backgroundColor: const Color(0xFFFFE4EC),
+                valueColor: const AlwaysStoppedAnimation<Color>(Rom.rose),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "This week in love" — a rolling 7-day look at who showed up.
+class _WeeklyRecap extends StatelessWidget {
+  const _WeeklyRecap({required this.state, required this.s});
+
+  final AppState state;
+  final Strings s;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final mineByDay = <int, int>{};
+    final theirsByDay = <int, int>{};
+
+    for (final Nudge n in state.nudges) {
+      final day = DateTime(
+        n.createdAt.year,
+        n.createdAt.month,
+        n.createdAt.day,
+      );
+      final back = today.difference(day).inDays;
+      if (back < 0 || back > 6) continue;
+      final slot = 6 - back; // 0 = six days ago … 6 = today
+      if (n.senderId == (state.profile?.id ?? '')) {
+        mineByDay[slot] = (mineByDay[slot] ?? 0) + 1;
+      } else {
+        theirsByDay[slot] = (theirsByDay[slot] ?? 0) + 1;
+      }
+    }
+
+    var weekMine = 0;
+    var weekTheirs = 0;
+    mineByDay.forEach((int _, int v) => weekMine += v);
+    theirsByDay.forEach((int _, int v) => weekTheirs += v);
+
+    const dayLetters = <String>['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    final maxCount = <int>{
+      ...mineByDay.values,
+      ...theirsByDay.values,
+      1,
+    }.reduce((int a, int b) => a > b ? a : b);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: Rom.glass(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('📅 ${s.t('weekInLove')}', style: Rom.title),
+          const SizedBox(height: 4),
+          Text(
+            '$weekMine ${s.t('nudgesSent')} · $weekTheirs ${s.t('nudgesGot')}',
+            style: Rom.body,
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List<Widget>.generate(7, (int slot) {
+              final m = mineByDay[slot] ?? 0;
+              final t = theirsByDay[slot] ?? 0;
+              // slot 6 == today; align the letters to real weekdays.
+              final letter = dayLetters[(today.subtract(Duration(days: 6 - slot)).weekday - 1) % 7];
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      SizedBox(
+                        height: 84,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Expanded(
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween<double>(
+                                  begin: 0,
+                                  end: m == 0 ? 0 : 16 + 68 * (m / maxCount),
+                                ),
+                                duration: const Duration(milliseconds: 650),
+                                curve: Curves.easeOutCubic,
+                                builder: (BuildContext context, double v, _) =>
+                                    Container(
+                                  height: v,
+                                  decoration: BoxDecoration(
+                                    color: Rom.coral,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                            Expanded(
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween<double>(
+                                  begin: 0,
+                                  end: t == 0 ? 0 : 16 + 68 * (t / maxCount),
+                                ),
+                                duration: const Duration(milliseconds: 650),
+                                curve: Curves.easeOutCubic,
+                                builder: (BuildContext context, double v, _) =>
+                                    Container(
+                                  height: v,
+                                  decoration: BoxDecoration(
+                                    color: Rom.rose,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        letter,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Rom.inkSoft,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: <Widget>[
+              _LegendDot(color: Rom.coral, label: s.t('mineLabel')),
+              const SizedBox(width: 14),
+              _LegendDot(color: Rom.rose, label: s.t('partnerDefault')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 11.5, color: Rom.inkSoft)),
+      ],
     );
   }
 }

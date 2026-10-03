@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// NudgeBuddy romantic design tokens — soft blush palette, glass cards,
+/// TapCare romantic design tokens — soft blush palette, glass cards,
 /// glowy hearts. Used across every screen so the feel stays consistent.
 class Rom {
   Rom._();

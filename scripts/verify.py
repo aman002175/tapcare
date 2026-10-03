@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Static checks for the TapCare project.
+
+The Flutter SDK is not available in this environment, so `flutter analyze`
+cannot run. These checks cover the classes of error that a rename or a new
+feature can introduce, which would otherwise only surface at build time:
+
+  1. every import (relative and `package:`) resolves to a real file
+  2. every `t('key')` used anywhere exists in BOTH hi and en
+  3. no leftover references to the old package/application id
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+failures = []
+
+
+def dart_files():
+    for base in ("lib", "test"):
+        for dirpath, _dirs, names in os.walk(os.path.join(ROOT, base)):
+            for n in names:
+                if n.endswith(".dart"):
+                    yield os.path.join(dirpath, n)
+
+
+def rel(path):
+    return os.path.relpath(path, ROOT)
+
+
+# ---- 1. imports resolve -------------------------------------------------
+IMPORT_RE = re.compile(r"""import\s+'([^']+)'""")
+for path in dart_files():
+    src = open(path, encoding="utf-8").read()
+    for target in IMPORT_RE.findall(src):
+        if target.startswith("dart:"):
+            continue
+        if target.startswith("package:tapcare/"):
+            candidate = os.path.join(ROOT, "lib", target[len("package:tapcare/"):])
+        elif target.startswith("package:"):
+            # Third-party package (flutter_riverpod, go_router, home_widget,
+            # ...) — resolved by pub, not by this script.
+            continue
+        else:
+            candidate = os.path.join(os.path.dirname(path), target)
+        if not os.path.isfile(candidate):
+            failures.append(f"{rel(path)}: unresolved import '{target}'")
+
+# ---- 2. string keys exist in hi and en ----------------------------------
+strings_src = open(os.path.join(ROOT, "lib/config/strings.dart"), encoding="utf-8").read()
+# Entries are written across multiple lines and the English value is
+# sometimes double-quoted (e.g. 'quoteOfDay': {'hi': '...', 'en': "..."}),
+# so both quote styles are accepted.
+VAL = r"""(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')"""
+entry_re = re.compile(
+    r"'([A-Za-z0-9_]+)'\s*:\s*\{\s*'hi'\s*:\s*" + VAL + r"\s*,\s*"
+    r"'en'\s*:\s*" + VAL + r"\s*,?\s*\}",
+    re.DOTALL,
+)
+entries = {m.group(1) for m in entry_re.finditer(strings_src)}
+
+# any key present but missing one language
+all_key_re = re.compile(r"'([A-Za-z0-9_]+)'\s*:\s*\{")
+declared = set(all_key_re.findall(strings_src))
+for key in declared:
+    if key not in entries:
+        failures.append(f"lib/config/strings.dart: key '{key}' missing 'hi' or 'en'")
+
+USE_RE = re.compile(r"""\.t\(\s*'([A-Za-z0-9_]+)'""")
+used = set()
+for path in dart_files():
+    src = open(path, encoding="utf-8").read()
+    for key in USE_RE.findall(src):
+        # `Strings(app.locale).t('key')` appears in the Strings doc comment.
+        if key == "key":
+            continue
+        used.add(key)
+        if key not in entries:
+            failures.append(f"{rel(path)}: t('{key}') has no hi/en entry")
+
+# keys built dynamically via s.t(currentSlot().key())
+DYNAMIC = {"morning", "afternoon", "evening", "night"}
+for key in DYNAMIC:
+    if key not in entries:
+        failures.append(f"dynamic key '{key}' missing from strings.dart")
+
+# ---- 3. no leftovers from the old name ----------------------------------
+STALE = ("com.nudgebuddy", "package:nudgebuddy", "NudgeBuddyApp")
+for dirpath, dirs, names in os.walk(ROOT):
+    dirs[:] = [d for d in dirs if d not in (".git", "build", ".dart_tool")]
+    for n in names:
+        if not n.endswith((".dart", ".kts", ".xml", ".yml", ".yaml", ".json", ".html")):
+            continue
+        p = os.path.join(dirpath, n)
+        try:
+            src = open(p, encoding="utf-8").read()
+        except (UnicodeDecodeError, OSError):
+            continue
+        for bad in STALE:
+            if bad in src:
+                failures.append(f"{rel(p)}: leftover '{bad}'")
+
+# ---- report -------------------------------------------------------------
+print(f"strings: {len(entries)} keys declared, {len(used)} keys used")
+if failures:
+    print(f"\nFAIL ({len(failures)})")
+    for f in failures:
+        print("  -", f)
+    sys.exit(1)
+print("\nOK: imports resolve, every t() key has hi+en, no stale identifiers")

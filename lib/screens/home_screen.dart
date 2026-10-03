@@ -326,6 +326,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         const SizedBox(height: 18),
                       ],
 
+                      // ---- right now: care that fits this hour ----
+                      _SectionHeader(
+                        title: '${currentSlot().emoji()} ${s.t('rightNow')}',
+                        trailing: s.t(currentSlot().key()),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 92,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: suggestedPresets().length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: 10),
+                          itemBuilder: (BuildContext c, int i) {
+                            final p = suggestedPresets()[i];
+                            return _PresetChip(
+                              preset: p,
+                              locale: state.locale,
+                              accent: accent,
+                              onTap: () => _sendPreset(p, state.locale),
+                              onLongPress: () => ref
+                                  .read(appProvider.notifier)
+                                  .toggleFavorite(p.id),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
                       // ---- all presets ----
                       _SectionHeader(title: s.t('sendSection'), trailing: '💗'),
                       const SizedBox(height: 10),

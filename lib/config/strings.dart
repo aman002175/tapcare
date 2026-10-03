@@ -12,7 +12,7 @@ class Strings {
 
   static const Map<String, Map<String, String>> _map =
       <String, Map<String, String>>{
-    'appTitle': {'hi': 'NudgeBuddy', 'en': 'NudgeBuddy'},
+    'appTitle': {'hi': 'TapCare', 'en': 'TapCare'},
     'tagline': {'hi': 'बिना बोले, ख्याल 💛', 'en': 'Care without words 💛'},
     'onboardTitle': {
       'hi': 'नमस्ते! अपना नाम बताओ',
@@ -154,5 +154,44 @@ class Strings {
     },
     'sendQuick': {'hi': 'तुरंत भेजो', 'en': 'Quick send'},
     'anniversarySet': {'hi': 'तारीख़ सेट हो गई 💐', 'en': 'Date saved 💐'},
+
+    // ---- TapCare: love-meter breakdown + weekly recap ----
+    'meterBreakdown': {'hi': 'पैमाना कैसे बना', 'en': 'How the meter works'},
+    'careGiven': {'hi': 'तुमने दिया', 'en': 'Care you gave'},
+    'balance': {'hi': 'दोनों का संतुलन', 'en': 'Both-way balance'},
+    'rhythm': {'hi': 'रोज़ की लय', 'en': 'Daily rhythm'},
+    'acknowledged': {'hi': 'नज़ देखी गईं', 'en': 'Nudges opened'},
+    'weekInLove': {
+      'hi': 'इस हफ़्ते का प्यार',
+      'en': 'This week in love',
+    },
+
+    // ---- TapCare: home screen widget ----
+    'addHomeWidget': {'hi': 'होम स्क्रीन पर लगाओ', 'en': 'Add to home screen'},
+    'addHomeWidgetHint': {
+      'hi': 'होम स्क्रीन को लंबा दबाओ → Widgets → TapCare',
+      'en': 'Long-press your home screen → Widgets → TapCare',
+    },
+    'widgetAdded': {'hi': 'विजेट लग गया 💛', 'en': 'Widget added 💛'},
+    'widgetPreview': {'hi': 'असली विजेट ऐसा दिखेगा', 'en': "This is how it looks"},
+    'widgetResizable': {
+      'hi': 'कोने खींचकर आकार बदलो',
+      'en': 'Drag the corners to resize',
+    },
+    'widgetOpenApp': {'hi': 'खोलने के लिए टैप करो', 'en': 'Tap to open'},
+    'widgetLatestNudge': {'hi': 'पिछला नज़', 'en': 'Latest nudge'},
+    'noNudgeYet': {'hi': 'अभी कोई नज़ नहीं', 'en': 'No nudge yet'},
+
+    // ---- TapCare: time-aware presets ----
+    'morning': {'hi': 'सुबह', 'en': 'Morning'},
+    'afternoon': {'hi': 'दोपहर', 'en': 'Afternoon'},
+    'evening': {'hi': 'शाम', 'en': 'Evening'},
+    'night': {'hi': 'रात', 'en': 'Night'},
+    'rightNow': {'hi': 'अभी के लिए', 'en': 'Right now'},
+    'allTimes': {'hi': 'सभी', 'en': 'All'},
+
+    // ---- TapCare: reactions ----
+    'reactTo': {'hi': 'जवाब दो', 'en': 'Reply with'},
+    'reacted': {'hi': 'जवाब भेजा 💛', 'en': 'Reply sent 💛'},
   };
 }

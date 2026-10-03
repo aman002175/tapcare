@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nudgebuddy/screens/home_screen.dart';
-import 'package:nudgebuddy/screens/settings_screen.dart';
-import 'package:nudgebuddy/services/storage_service.dart';
-import 'package:nudgebuddy/state/app_state.dart';
+import 'package:tapcare/screens/home_screen.dart';
+import 'package:tapcare/screens/settings_screen.dart';
+import 'package:tapcare/services/storage_service.dart';
+import 'package:tapcare/state/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Guards the "nothing responds / won't scroll" class of bug: ambient

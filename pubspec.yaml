@@ -1,5 +1,5 @@
-name: nudgebuddy
-description: "A new Flutter project."
+name: tapcare
+description: "TapCare — care without words. One tap sends a nudge to the person you love."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -38,6 +38,7 @@ dependencies:
   go_router: ^17.2.3
   shared_preferences: ^2.5.5
   google_fonts: ^8.1.0
+  home_widget: ^0.10.0
 
 dev_dependencies:
   flutter_test:

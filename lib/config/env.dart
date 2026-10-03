@@ -1,4 +1,4 @@
-/// Runtime configuration for NudgeBuddy.
+/// Runtime configuration for TapCare.
 ///
 /// Real service keys belong in `.env.example` at the repo root (placeholders
 /// only). This build ships in DEMO/LOCAL MODE: no backend is ever contacted.

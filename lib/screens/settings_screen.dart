@@ -413,7 +413,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 10),
                       Text(s.t('demoNote'), style: Rom.body),
                       const SizedBox(height: 6),
-                      const Text('NudgeBuddy v1.1.0',
+                      const Text('TapCare v1.2.0',
                           style: TextStyle(fontSize: 12, color: Rom.inkSoft)),
                     ],
                   ),

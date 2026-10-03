@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nudgebuddy/main.dart';
-import 'package:nudgebuddy/screens/home_screen.dart';
-import 'package:nudgebuddy/screens/onboarding_screen.dart';
-import 'package:nudgebuddy/services/storage_service.dart';
-import 'package:nudgebuddy/state/app_state.dart';
+import 'package:tapcare/main.dart';
+import 'package:tapcare/screens/home_screen.dart';
+import 'package:tapcare/screens/onboarding_screen.dart';
+import 'package:tapcare/services/storage_service.dart';
+import 'package:tapcare/state/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -22,7 +22,7 @@ void main() {
             LocalStorage(await SharedPreferences.getInstance()),
           ),
         ],
-        child: const NudgeBuddyApp(),
+        child: const TapCareApp(),
       ),
     );
     await tester.pump();
@@ -45,7 +45,7 @@ void main() {
             LocalStorage(await SharedPreferences.getInstance()),
           ),
         ],
-        child: const NudgeBuddyApp(),
+        child: const TapCareApp(),
       ),
     );
     await tester.pump();

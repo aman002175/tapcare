@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nudgebuddy/models/nudge.dart';
-import 'package:nudgebuddy/screens/home_screen.dart';
-import 'package:nudgebuddy/screens/overlay_screen.dart';
-import 'package:nudgebuddy/screens/pair_screen.dart';
-import 'package:nudgebuddy/screens/send_nudge_screen.dart';
-import 'package:nudgebuddy/screens/settings_screen.dart';
-import 'package:nudgebuddy/screens/share_card_screen.dart';
-import 'package:nudgebuddy/screens/stats_screen.dart';
-import 'package:nudgebuddy/screens/widget_mode_screen.dart';
-import 'package:nudgebuddy/services/storage_service.dart';
-import 'package:nudgebuddy/state/app_state.dart';
+import 'package:tapcare/models/nudge.dart';
+import 'package:tapcare/screens/home_screen.dart';
+import 'package:tapcare/screens/overlay_screen.dart';
+import 'package:tapcare/screens/pair_screen.dart';
+import 'package:tapcare/screens/send_nudge_screen.dart';
+import 'package:tapcare/screens/settings_screen.dart';
+import 'package:tapcare/screens/share_card_screen.dart';
+import 'package:tapcare/screens/stats_screen.dart';
+import 'package:tapcare/screens/widget_mode_screen.dart';
+import 'package:tapcare/services/storage_service.dart';
+import 'package:tapcare/state/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Renders every screen at phone size and fails on ANY Flutter error

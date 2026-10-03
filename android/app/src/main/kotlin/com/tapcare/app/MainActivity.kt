@@ -1,4 +1,4 @@
-package com.nudgebuddy.app
+package com.tapcare.app
 
 import io.flutter.embedding.android.FlutterActivity
 

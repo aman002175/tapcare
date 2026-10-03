@@ -25,8 +25,27 @@ No chat.
 
 ## Love dashboard (v1.1)
 
-- **Love meter** 0–100% = balance (40%) + rhythm/streak (30%) + acknowledgement
-  (30%). Derived on the fly in `models/couple_stats.dart`, never stored.
+- **Love meter** 0–100%, derived on the fly in `models/couple_stats.dart`,
+  never stored. Four transparent sub-scores:
+  | Sub-score | Weight | Meaning |
+  |---|---|---|
+  | Care given | 30% | how much *you* initiate — sending can only raise it |
+  | Balance | 30% | how even the care is between both people |
+  | Rhythm | 20% | streak of consecutive days with a nudge |
+  | Acknowledged | 20% | share of **received** nudges that were opened |
+
+  Acknowledgement deliberately ignores nudges you sent — you never "see" your
+  own nudge, so counting them used to dilute the score on every send and made
+  the percentage *drop* the more care you gave. "Your story" shows the full
+  breakdown plus a hint about what is holding the meter back.
+- **This week in love** — rolling 7-day stacked bar chart of who showed up.
+- **Time-aware care** — a "Right now" row ranks presets by the hour
+  (morning / afternoon / evening / night) before the full grid.
+- **Home-screen widget** — a real, resizable `RemoteViews` widget
+  (`TapCareWidgetProvider`) placed from the launcher picker. Small and large
+  layouts, an animated reveal, and it shows the partner's latest nudge, the
+  love meter, the streak and the daily quote. Widget mode inside the app
+  previews it and explains how to add it.
 - **Streak** — consecutive days ending today/yesterday with at least one nudge.
 - **Together** — days since pairing (chips switch to months after 30 days).
 - **Mood check-in** — one tap per day, last 30 moods kept locally.
@@ -48,7 +67,7 @@ No chat.
 - **No backend, no accounts, no push** in this build — local demo only.
 - **No Razorpay code** until keys are provided (stub only).
 - **No groups, no admin panel, no feeds, no discovery.**
-- Single Android target (`com.nudgebuddy.app`); web build exists for the
+- Single Android target (`com.tapcare.app`); web build exists for the
   hosted preview only.
 
 ## Design language
@@ -61,7 +80,7 @@ animation packages — pure Flutter implicit animations and transforms.
 
 ## Definition of done (v1)
 
-- `flutter analyze` clean, `flutter test` green.
+- `flutter analyze` clean, `flutter test` green, `python3 scripts/verify.py` OK.
 - Onboarding → pair → send → overlay → seen → recent list all work from a
   cold start with no network.
 - Love meter, streak, mood check-in, stats and share card render without

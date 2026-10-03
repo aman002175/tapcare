@@ -6,6 +6,7 @@ Requirements: Flutter 3.35.5+ (stable), Android Studio or a device/emulator.
 
 ```sh
 flutter pub get
+python3 scripts/verify.py   # static checks (no Flutter SDK needed)
 flutter analyze
 flutter test
 flutter run            # Android device/emulator
@@ -47,7 +48,7 @@ git branch -M main
 
 # 1) commit everything
 git add -A
-git commit -m "NudgeBuddy: Flutter app + docs + APK workflow"
+git commit -m "TapCare: Flutter app + docs + APK workflow"
 
 # 2) remote
 git remote add origin https://github.com/<owner>/<repo>.git
@@ -78,7 +79,7 @@ Workflow: `.github/workflows/build-apk.yml`
 - Triggers: push to `main`, or manual `workflow_dispatch`.
 - Steps: checkout → Flutter 3.35.5 → `pub get` → `analyze` → `test` →
   `flutter build apk --debug` → upload artifact.
-- Download: repo → **Actions** → run → **Artifacts** → `nudgebuddy-apk`.
+- Download: repo → **Actions** → run → **Artifacts** → `tapcare-apk`.
 
 ## Repo secrets (optional, for later)
 

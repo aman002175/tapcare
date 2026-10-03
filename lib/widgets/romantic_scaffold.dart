@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../design/romantic_tokens.dart';
 import 'romance_motion.dart';
 
-/// Scaffold with the NudgeBuddy romantic background (mesh + floating hearts),
+/// Scaffold with the TapCare romantic background (mesh + floating hearts),
 /// so every screen shares the same warm, dreamy feel.
 class RomanticScaffold extends StatelessWidget {
   const RomanticScaffold({

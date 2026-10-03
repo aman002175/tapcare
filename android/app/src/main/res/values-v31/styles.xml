@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ (API 31) system splash screen. Uses the platform attributes
+     directly so no extra splashscreen dependency is required. -->
 <resources>
-    <!-- TapCare is a light, pastel experience in every mode (the Flutter
-         scaffold is always Rom.blush), so the native window stays light too.
-         This avoids a black flash in dark mode. -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/tapcare_blush</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_tapcare_heart</item>
     </style>
 
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">

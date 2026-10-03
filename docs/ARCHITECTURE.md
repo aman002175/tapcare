@@ -56,5 +56,29 @@ flowchart TD
 
 `.github/workflows/build-apk.yml` runs on push to `main`:
 checkout → Flutter 3.35.5 (pinned) → `pub get` → `analyze` → `test` →
-`build apk --debug` → upload `nudgebuddy-apk` artifact (downloadable from
+`build apk --debug` → upload `tapcare-apk` artifact (downloadable from
 the Actions run page).
+
+## Home-screen widget
+
+`home_widget` bridges Dart → the launcher. Flutter cannot render inside a
+`RemoteViews` widget, so the data is flattened instead:
+
+```mermaid
+flowchart LR
+    A[AppController state change] --> B[HomeWidgetService.syncFrom]
+    B -->|saveWidgetData| C[(HomeWidgetPreferences<br/>shared prefs)]
+    B -->|updateWidget| D[HomeWidgetPlugin]
+    D --> E[TapCareWidgetProvider<br/>RemoteViews]
+    C --> E
+    E --> F[Launcher: small ↔ large, resizable]
+```
+
+- Dart: `lib/services/home_widget_service.dart` writes ~15 string keys
+  (partner, love meter, streak, latest nudge, quote) and requests a redraw.
+- Native: `TapCareWidgetProvider.kt` reads those keys and inflates
+  `tapcare_widget_small.xml` or `tapcare_widget_large.xml` depending on the
+  granted size, with a one-shot `RemoteViews` reveal animation.
+- Resizing is declared in `res/xml/tapcare_widget_info.xml`
+  (`resizeMode="horizontal|vertical"`, 110dp → 450dp).
+- All widget calls are wrapped in try/catch — a widget can never break the app.

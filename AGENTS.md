@@ -1,4 +1,4 @@
-# AGENTS.md — NudgeBuddy onboarding brief
+# AGENTS.md — TapCare onboarding brief
 
 Read this first. It is the single source of scope for AI coding agents.
 
@@ -10,10 +10,11 @@ Hindi-first UI with an English switch.
 
 ## Stack (locked)
 
-- Flutter 3.35.5 / Dart, Material 3, package `com.nudgebuddy.app`
+- Flutter 3.35.5 / Dart, Material 3, package `com.tapcare.app`
 - State: `flutter_riverpod` (Notifier pattern) · routing: `go_router`
 - Local storage: `shared_preferences` · fonts: `google_fonts`
-- CI: GitHub Actions → `flutter build apk --debug` → artifact `nudgebuddy-apk`
+- Home-screen widget: `home_widget` + native `TapCareWidgetProvider`
+- CI: GitHub Actions → `flutter build apk --debug` → artifact `tapcare-apk`
 
 ## Layout
 
@@ -26,13 +27,18 @@ lib/
   models/                 # app_user, pairing, nudge, mood_entry, couple_stats (mirror future SQL)
   services/               # storage_service.dart (LocalStorage)
                           # backend_services.dart (NudgeService/PairService interfaces + demo impls)
+                          # home_widget_service.dart (pushes care data to the Android widget)
   state/app_state.dart    # AppController (Riverpod Notifier) + providers + derived CoupleStats
   screens/                # onboarding, home, pair, send_nudge, overlay, settings,
                           # stats, share_card, widget_mode
   widgets/                # romance_motion (mesh bg, floating hearts, fade-in, heartbeat)
                           # heart_burst + shine button, romantic_scaffold,
-                          # nudge_overlay (signature animation), theme_card
+                          # nudge_overlay (signature animation), splash_screen, theme_card
   themes/widget_themes.dart
+android/app/src/main/kotlin/com/tapcare/app/
+                          # MainActivity.kt, TapCareWidgetProvider.kt (RemoteViews widget)
+android/app/src/main/res/  # widget layouts, widget_bg drawables, tapcare_widget_info.xml
+scripts/verify.py         # static guard: imports resolve, hi/en keys, no stale ids
 docs/                     # ARCHITECTURE, DATA_MODEL, API, SETUP, PRODUCT_SPEC, MOBILE_BUILD
 env.example.txt           # all future keys (placeholders)
 .github/workflows/build-apk.yml
@@ -64,6 +70,8 @@ env.example.txt           # all future keys (placeholders)
    no admin, one active pair, last-20 nudges, local demo data only.
 4. Do not convert to Capacitor/PWA — this stays a native Flutter project.
 5. Keep `flutter analyze` clean and `flutter test` green before finishing.
+   Also run `python3 scripts/verify.py` — it catches unresolved imports and
+   missing hi/en string keys without needing a Flutter SDK.
 6. Keep the GitHub Actions workflow pinned (Flutter version, action tags).
 
 ## Definition of done

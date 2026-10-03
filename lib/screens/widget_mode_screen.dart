@@ -6,11 +6,11 @@ import '../design/romantic_tokens.dart';
 import '../state/app_state.dart';
 import '../widgets/heart_burst.dart';
 import '../widgets/romance_motion.dart';
+import '../widgets/romantic_scaffold.dart';
 import 'overlay_screen.dart';
 
-/// "Widget mode" — a live mini-card that lives on your phone screen,
-/// the closest thing to a real home-screen widget without a native build.
-/// It always has your couple's love meter and a one-tap nudge button.
+/// "Widget mode" — the in-app preview of the TapCare card plus instructions
+/// for dropping the real, resizable widget onto the Android home screen.
 class WidgetModeScreen extends ConsumerStatefulWidget {
   const WidgetModeScreen({super.key});
 
@@ -57,6 +57,46 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
     super.dispose();
   }
 
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  /// Opens the overlay for a nudge that *arrived* from the partner.
+  ///
+  /// The old code took `state.nudges.first` regardless of who sent it, so
+  /// tapping the mini card could mark one of **your own outgoing** nudges as
+  /// seen — which both corrupted the acknowledgement score and made the love
+  /// meter jump around for no reason. Only received nudges can be acknowledged.
+  void _openLatestReceived(AppState state) {
+    final myId = state.profile?.id ?? 'u_local';
+    final received =
+        state.nudges.where((n) => n.senderId != myId).toList(growable: false);
+    if (received.isEmpty) {
+      _toast(state.locale == 'hi'
+          ? 'अभी कोई आने वाला नज़ नहीं 💛'
+          : 'No incoming nudge yet 💛');
+      return;
+    }
+    final unseen =
+        received.where((n) => !n.seen).toList(growable: false);
+    final n = unseen.isNotEmpty ? unseen.first : received.first;
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => OverlayScreen(
+          nudge: n,
+          senderName: state.pair?.partnerName ?? 'Buddy',
+          senderEmoji: state.pair?.partnerEmoji ?? '💗',
+          locale: state.locale,
+          onSeen: () => ref.read(appProvider.notifier).markSeen(n.id),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(appProvider);
@@ -68,21 +108,14 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
       seed: (state.profile?.id.hashCode ?? 7) + 3,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(s.t('widgetMode'), style: Rom.title),
-          iconTheme: const IconThemeData(color: Rom.ink),
-        ),
+        appBar: romAppBar(title: s.t('widgetMode')),
         body: Stack(
           children: <Widget>[
             SafeArea(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
                 children: <Widget>[
-                  FadeSlideIn(
-                    child: Text(s.t('widgetModeHint'), style: Rom.body),
-                  ),
+                  FadeSlideIn(child: Text(s.t('widgetModeHint'), style: Rom.body)),
                   const SizedBox(height: 20),
 
                   // ---- mini widget (small) ----
@@ -90,31 +123,7 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
                     delayMs: 70,
                     child: Center(
                       child: GestureDetector(
-                        onTap: () {
-                          if (state.nudges.isNotEmpty) {
-                            final n = state.nudges.first;
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => OverlayScreen(
-                                  nudge: n,
-                                  senderName: n.senderId ==
-                                          (state.profile?.id ?? '')
-                                      ? (state.profile?.displayName ?? '')
-                                      : (state.pair?.partnerName ??
-                                          s.t('buddyDefault')),
-                                  senderEmoji: n.senderId ==
-                                          (state.profile?.id ?? '')
-                                      ? (state.profile?.avatarEmoji ?? '💗')
-                                      : (state.pair?.partnerEmoji ?? '💗'),
-                                  locale: state.locale,
-                                  onSeen: () => ref
-                                      .read(appProvider.notifier)
-                                      .markSeen(n.id),
-                                ),
-                              ),
-                            );
-                          }
-                        },
+                        onTap: () => _openLatestReceived(state),
                         child: Container(
                           width: 190,
                           padding: const EdgeInsets.all(16),
@@ -129,8 +138,9 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
                               Row(
                                 children: <Widget>[
                                   const Heartbeat(
-                                      child: Text('💗',
-                                          style: TextStyle(fontSize: 18))),
+                                    child: Text('💗',
+                                        style: TextStyle(fontSize: 18)),
+                                  ),
                                   const Spacer(),
                                   Text(
                                     '${stats.loveMeter.round()}%',
@@ -188,14 +198,15 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
                           borderRadius: BorderRadius.circular(28),
                           boxShadow: Rom.glowShadow(Rom.rose),
                         ),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    '${state.profile?.displayName ?? ''} 💗 ${state.pair?.partnerName ?? s.t('partnerDefault')}',
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    '${state.profile?.displayName ?? ''} 💗 '
+                                    '${state.pair?.partnerName ?? s.t('partnerDefault')}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -203,30 +214,52 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _quote(state.locale),
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        height: 1.35,
-                                        fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  '${stats.loveMeter.round()}%',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w800),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _quote(state.locale),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  height: 1.35,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 12),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(999),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: stats.mineFlex,
+                                    child: Container(
+                                        height: 10, color: Colors.white),
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Expanded(
+                                    flex: stats.theirsFlex,
+                                    child: Container(
+                                        height: 10,
+                                        color: Colors.white.withValues(alpha: 0.55)),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 14),
-                            Column(
-                              children: <Widget>[
-                                Text('${stats.loveMeter.round()}%',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.w800)),
-                                const Text('love',
-                                    style: TextStyle(
-                                        color: Colors.white70, fontSize: 11)),
-                              ],
+                            const SizedBox(height: 6),
+                            Text(
+                              '${stats.mine} ${s.t('nudgesSent')} · '
+                              '${stats.theirs} ${s.t('nudgesGot')}',
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 11),
                             ),
                           ],
                         ),
@@ -241,23 +274,21 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
                     child: ShineButton(
                       label: '💌 ${s.t('sendQuick')}',
                       onPressed: () async {
-                        final n = state.nudges.isEmpty ? null : state.nudges.first;
                         await ref
                             .read(appProvider.notifier)
-                            .sendNudge(message: 'मुझे याद आ रहा है 💛', emoji: '💌');
+                            .sendNudge(
+                                message: 'मुझे याद आ रहा है 💛', emoji: '💌');
                         _burst.forward(from: 0);
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(s.t('sentToast')),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                        if (n != null) {
-                          // no-op: keep last nudge context
-                        }
+                        _toast(s.t('sentToast'));
                       },
                     ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ---- add the real widget to the home screen ----
+                  FadeSlideIn(
+                    delayMs: 220,
+                    child: _AddWidgetCard(s: s, locale: state.locale),
                   ),
                   const SizedBox(height: 20),
 
@@ -282,6 +313,126 @@ class _WidgetModeScreenState extends ConsumerState<WidgetModeScreen>
             Positioned.fill(child: HeartBurst(controller: _burst)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Instructions + feature list for placing the real widget on the launcher.
+class _AddWidgetCard extends StatelessWidget {
+  const _AddWidgetCard({required this.s, required this.locale});
+
+  final Strings s;
+  final String locale;
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = locale == 'hi'
+        ? <String>[
+            'होम स्क्रीन पर उँगली दबाकर रखो',
+            'Widgets → TapCare चुनो',
+            'कोने खींचकर आकार बदलो',
+          ]
+        : <String>[
+            'Long-press an empty spot on the home screen',
+            'Swipe to Widgets → tap TapCare',
+            'Drag the corners to resize it',
+          ];
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: Rom.dreamGradient,
+        borderRadius: BorderRadius.circular(Rom.rXl),
+        boxShadow: Rom.glowShadow(Rom.lilac),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              const Text('🏠', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(s.t('addHomeWidget'),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            s.t('addHomeWidgetHint'),
+            style: const TextStyle(color: Colors.white70, fontSize: 12.5),
+          ),
+          const SizedBox(height: 14),
+          for (int i = 0; i < steps.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    width: 20,
+                    height: 20,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${i + 1}',
+                      style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      steps[i],
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(Rom.rMd),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  '✨ ${s.t('widgetPreview')}',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  locale == 'hi'
+                      ? 'जो कार्ड सामने वाला भेजेगा, वही आपकी होम स्क्रीन पर उछलकर दिखेगा — प्यार का प्रतिशत, स्ट्रीक, और उसका आख़िरी नज़।'
+                      : 'Whatever card your partner sends appears right here on your home screen — love meter, streak and their latest nudge.',
+                  style: const TextStyle(
+                      color: Colors.white70, fontSize: 12, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
