@@ -64,17 +64,24 @@ class _TapCareBootstrapState extends State<TapCareBootstrap> {
       builder: (BuildContext context, AsyncSnapshot<LocalStorage> snap) {
         final storage = snap.data;
         final ready = storage != null && _minElapsed;
-        return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 550),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          child: ready
-              ? ProviderScope(
-                  key: const ValueKey<String>('app'),
-                  overrides: [storageProvider.overrideWithValue(storage)],
-                  child: const TapCareApp(),
-                )
-              : const SplashScreen(key: ValueKey<String>('splash')),
+        // The splash renders before any MaterialApp exists, so it has no
+        // Directionality ancestor and Scaffold/Text would throw
+        // "No Directionality widget found". MaterialApp supplies its own
+        // Directionality once it takes over, so only the splash needs this.
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 550),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: ready
+                ? ProviderScope(
+                    key: const ValueKey<String>('app'),
+                    overrides: [storageProvider.overrideWithValue(storage)],
+                    child: const TapCareApp(),
+                  )
+                : const SplashScreen(key: ValueKey<String>('splash')),
+          ),
         );
       },
     );
