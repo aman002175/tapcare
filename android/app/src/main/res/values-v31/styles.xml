@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Android 12+ (API 31) system splash screen.
-     `android:windowSplashScreenIconBackgroundSize` MUST be set: when it is
-     omitted Android falls back to ~240dp and the heart fills the whole
-     screen as a flat pink blob. 76dp keeps it as a tasteful mark. -->
+
+     NOTE: there is no `android:windowSplashScreenIconBackgroundSize`
+     platform attribute — only `...IconBackgroundColor`. An earlier revision
+     of this file declared the size variant and resource linking failed with
+     "style attribute not found". The apparent size of the icon is therefore
+     controlled inside the vector itself (see ic_tapcare_heart.xml), by
+     shrinking the path inside its 24x24 viewport. -->
 <resources>
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:windowSplashScreenBackground">@color/tapcare_blush</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_tapcare_heart</item>
-        <item name="android:windowSplashScreenIconBackgroundSize">76dp</item>
     </style>
 
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">

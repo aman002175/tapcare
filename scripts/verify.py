@@ -85,7 +85,35 @@ for key in DYNAMIC:
     if key not in entries:
         failures.append(f"dynamic key '{key}' missing from strings.dart")
 
-# ---- 3. no leftovers from the old name ----------------------------------
+# ---- 4. Android splash theme attributes must really exist ----------------
+# Regression guard: `android:windowSplashScreenIconBackgroundSize` was
+# invented and broke `processDebugResources` with
+# "style attribute ... not found". Well-formed XML is NOT enough — aapt
+# validates attribute names. This check is deliberately narrow so it can
+# never false-positive: it only inspects the `windowSplashScreen*` family,
+# whose complete API 31 set is small and stable.
+VALID_SPLASH_ATTRS = {
+    "windowSplashScreenBackground",
+    "windowSplashScreenAnimatedIcon",
+    "windowSplashScreenIconBackgroundColor",
+    "windowSplashScreenAnimationDuration",
+    "windowSplashScreenBrandingImage",
+}
+
+for base, _dirs, names in os.walk(os.path.join(ROOT, "android")):
+    for n in names:
+        if not n.endswith("styles.xml"):
+            continue
+        p = os.path.join(base, n)
+        raw = open(p, encoding="utf-8").read()
+        raw = re.sub(r"<!--.*?-->", "", raw, flags=re.S)  # aapt ignores comments
+        for attr in set(re.findall(r"android:(windowSplashScreen\w*)", raw)):
+            if attr not in VALID_SPLASH_ATTRS:
+                failures.append(
+                    f"{rel(p)}: android:{attr} is not a real Android attribute"
+                )
+
+# ---- 5. no leftovers from the old name ----------------------------------
 STALE = ("com.nudgebuddy", "package:nudgebuddy", "NudgeBuddyApp")
 for dirpath, dirs, names in os.walk(ROOT):
     dirs[:] = [d for d in dirs if d not in (".git", "build", ".dart_tool")]
