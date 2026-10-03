@@ -1,4 +1,4 @@
-package com.nudgebuddy.nudgebuddy
+package com.nudgebuddy.app
 
 import io.flutter.embedding.android.FlutterActivity
 
