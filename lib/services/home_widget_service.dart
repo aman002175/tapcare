@@ -2,9 +2,9 @@ import 'package:home_widget/home_widget.dart';
 
 import '../data/romance_content.dart';
 import '../models/app_user.dart';
+import '../models/couple_stats.dart';
 import '../models/nudge.dart';
 import '../models/pairing.dart';
-import '../state/app_state.dart';
 
 /// Pushes the couple's live care data onto the Android home-screen widget.
 ///
@@ -26,12 +26,23 @@ class HomeWidgetService {
 
   /// Writes the latest couple data and asks Android to redraw every
   /// placed instance of the widget.
-  static Future<void> syncFrom(AppState state) async {
+  ///
+  /// Takes plain fields rather than `AppState` so this service does not
+  /// import the state layer — that keeps the dependency one-way
+  /// (app_state -> home_widget_service) with no import cycle.
+  static Future<void> sync({
+    required AppUser? profile,
+    required Pairing? pair,
+    required List<Nudge> nudges,
+  }) async {
     try {
-      final me = state.profile;
-      final pair = state.pair;
-      final stats = state.stats;
-      final latest = state.nudges.isEmpty ? null : state.nudges.first;
+      final me = profile;
+      final stats = CoupleStats.from(
+        profile: profile,
+        pair: pair,
+        nudges: nudges,
+      );
+      final latest = nudges.isEmpty ? null : nudges.first;
 
       final latestIsMine =
           latest != null && latest.senderId == (me?.id ?? 'u_local');

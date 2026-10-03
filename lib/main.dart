@@ -10,7 +10,6 @@ import 'screens/send_nudge_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/widget_mode_screen.dart';
-import 'services/home_widget_service.dart';
 import 'services/storage_service.dart';
 import 'state/app_state.dart';
 import 'widgets/splash_screen.dart';
@@ -100,13 +99,6 @@ class TapCareApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(appProvider);
     final firstRun = state.profile == null;
-
-    // Keep the home-screen widget in sync with the latest care data. Done in
-    // a listener (not in build) so it runs once per real state change rather
-    // than on every unrelated rebuild.
-    ref.listen<AppState>(appProvider, (AppState? _, AppState next) {
-      HomeWidgetService.syncFrom(next);
-    }, fireImmediately: true);
 
     return MaterialApp.router(
       title: 'TapCare',

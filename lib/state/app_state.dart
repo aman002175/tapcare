@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import '../models/mood_entry.dart';
 import '../models/nudge.dart';
 import '../models/pairing.dart';
 import '../services/backend_services.dart';
+import '../services/home_widget_service.dart';
 import '../services/storage_service.dart';
 
 /// App-wide state (Riverpod Notifier).
@@ -70,10 +72,22 @@ class AppController extends Notifier<AppState> {
   @override
   AppState build() {
     final storage = ref.read(storageProvider);
+    final profile = storage.loadProfile();
+    final pair = ref.read(pairServiceProvider).currentPair();
+    final nudges = ref.read(nudgeServiceProvider).recentNudges();
+
+    // Seed the home-screen widget with whatever is already stored, so the
+    // card on the launcher's home screen is populated on cold start.
+    unawaited(HomeWidgetService.sync(
+      profile: profile,
+      pair: pair,
+      nudges: nudges,
+    ));
+
     return AppState(
-      profile: storage.loadProfile(),
-      pair: ref.read(pairServiceProvider).currentPair(),
-      nudges: ref.read(nudgeServiceProvider).recentNudges(),
+      profile: profile,
+      pair: pair,
+      nudges: nudges,
       locale: storage.locale,
       themeId: storage.theme,
       accentName: storage.accent,
@@ -84,6 +98,20 @@ class AppController extends Notifier<AppState> {
   }
 
   static final Random _rng = Random();
+
+  /// Push the current couple data onto the Android home-screen widget.
+  ///
+  /// Driven from the state mutations themselves rather than a widget-level
+  /// `ref.listen`, because Riverpod 3 dropped `fireImmediately` from
+  /// `WidgetRef.listen`. Fire-and-forget and internally guarded, so it can
+  /// never block or break a state change.
+  void _pushHomeWidget() {
+    unawaited(HomeWidgetService.sync(
+      profile: state.profile,
+      pair: state.pair,
+      nudges: state.nudges,
+    ));
+  }
 
   String _newId(String prefix) =>
       '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_rng.nextInt(9999)}';
@@ -98,6 +126,7 @@ class AppController extends Notifier<AppState> {
     );
     await ref.read(storageProvider).saveProfile(user);
     state = state.copyWith(profile: user);
+    _pushHomeWidget();
   }
 
   Future<void> updateProfile({required String name, required String emoji}) async {
@@ -107,6 +136,7 @@ class AppController extends Notifier<AppState> {
         current.copyWith(displayName: name.trim(), avatarEmoji: emoji);
     await ref.read(storageProvider).saveProfile(updated);
     state = state.copyWith(profile: updated);
+    _pushHomeWidget();
   }
 
   // ---- pairing ----
@@ -135,6 +165,7 @@ class AppController extends Notifier<AppState> {
     );
     await ref.read(pairServiceProvider).savePair(pair);
     state = state.copyWith(pair: pair);
+    _pushHomeWidget();
   }
 
   Future<void> breakPair() async {
@@ -151,6 +182,7 @@ class AppController extends Notifier<AppState> {
       anniversary: state.anniversary,
       moods: state.moods,
     );
+    _pushHomeWidget();
   }
 
   // ---- nudges ----
@@ -166,6 +198,7 @@ class AppController extends Notifier<AppState> {
     );
     await ref.read(nudgeServiceProvider).sendNudge(nudge);
     state = state.copyWith(nudges: [nudge, ...state.nudges]);
+    _pushHomeWidget();
   }
 
   /// Demo: a nudge that "arrives" from the partner (Knock→FCM later).
@@ -184,6 +217,7 @@ class AppController extends Notifier<AppState> {
     );
     await ref.read(nudgeServiceProvider).sendNudge(nudge);
     state = state.copyWith(nudges: [nudge, ...state.nudges]);
+    _pushHomeWidget();
     return nudge;
   }
 
@@ -191,6 +225,7 @@ class AppController extends Notifier<AppState> {
     await ref.read(nudgeServiceProvider).markSeen(nudgeId);
     final refreshed = ref.read(nudgeServiceProvider).recentNudges();
     state = state.copyWith(nudges: refreshed);
+    _pushHomeWidget();
   }
 
   /// Replay an existing nudge in the overlay (long-press a recent nudge).
