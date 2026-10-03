@@ -78,7 +78,28 @@ class _SplashScreenState extends State<SplashScreen>
                     );
                   },
                   child: const Heartbeat(
-                    child: Text('💗', style: TextStyle(fontSize: 64)),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: Rom.loveGradient,
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: Color(0x59FF6E91),
+                            blurRadius: 26,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: SizedBox(
+                        width: 112,
+                        height: 112,
+                        child: Icon(
+                          Icons.favorite_rounded,
+                          size: 58,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -107,10 +128,15 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 34),
                 _LoadingDots(controller: _dots),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
                 const Text(
                   'loading your love story…',
-                  style: TextStyle(fontSize: 11.5, color: Rom.inkSoft),
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    letterSpacing: 0.6,
+                    fontWeight: FontWeight.w600,
+                    color: Rom.inkSoft,
+                  ),
                 ),
               ],
             ),

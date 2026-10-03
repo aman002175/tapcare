@@ -35,9 +35,26 @@ class TapCareBootstrap extends StatefulWidget {
 class _TapCareBootstrapState extends State<TapCareBootstrap> {
   late final Future<LocalStorage> _storage = _openStorage();
 
+  /// How long the branded splash stays up at minimum.
+  ///
+  /// Storage usually resolves in a few milliseconds, so without this the
+  /// splash appeared for a single frame and looked like nothing at all —
+  /// the only thing the user ever saw was the Android system splash.
+  static const Duration minSplash = Duration(milliseconds: 1500);
+
+  bool _minElapsed = false;
+
   static Future<LocalStorage> _openStorage() async {
     final prefs = await SharedPreferences.getInstance();
     return LocalStorage(prefs);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(minSplash, () {
+      if (mounted) setState(() => _minElapsed = true);
+    });
   }
 
   @override
@@ -46,10 +63,18 @@ class _TapCareBootstrapState extends State<TapCareBootstrap> {
       future: _storage,
       builder: (BuildContext context, AsyncSnapshot<LocalStorage> snap) {
         final storage = snap.data;
-        if (storage == null) return const SplashScreen();
-        return ProviderScope(
-          overrides: [storageProvider.overrideWithValue(storage)],
-          child: const TapCareApp(),
+        final ready = storage != null && _minElapsed;
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 550),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          child: ready
+              ? ProviderScope(
+                  key: const ValueKey<String>('app'),
+                  overrides: [storageProvider.overrideWithValue(storage)],
+                  child: const TapCareApp(),
+                )
+              : const SplashScreen(key: ValueKey<String>('splash')),
         );
       },
     );
