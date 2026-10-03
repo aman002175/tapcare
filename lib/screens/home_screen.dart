@@ -129,6 +129,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 child: RefreshIndicator(
                   onRefresh: () async {},
                   child: ListView(
+                    // build a bit ahead of the viewport → smoother scrolling
+                    cacheExtent: 600,
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
                     children: <Widget>[
                       // ---- header ----
