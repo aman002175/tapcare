@@ -164,39 +164,47 @@ class _FloatingHeartsState extends State<FloatingHearts>
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _c,
-        builder: (BuildContext context, _) => LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            return Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                ..._hearts.map((_Heart h) {
-                  final t = (h.startY - _c.value * h.speed) % 1.2;
-                  final y = 1.15 - t;
-                  final x = h.x + math.sin((h.phase + _c.value) * 6.28) * h.drift;
-                  return Positioned(
-                    left: x * constraints.maxWidth,
-                    top: y * constraints.maxHeight,
-                    child: Opacity(
-                      // fade in at the bottom, out at the top
-                      opacity: (y < 0.02 || y > 1.02)
-                          ? 0
-                          : (widget.speckOpacity *
-                                  (y > 0.92 ? (1.05 - y) / 0.13 : 1))
-                              .clamp(0.0, 1.0),
-                      child: Text(h.glyph,
-                          style: TextStyle(fontSize: 18 * h.scale)),
-                    ),
-                  );
-                }),
-                if (widget.child != null) widget.child!,
-              ],
-            );
-          },
+    // The floating hearts are ambience only and must NEVER block input:
+    // IgnorePointer wraps ONLY the hearts, never [child].
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        IgnorePointer(
+          child: AnimatedBuilder(
+            animation: _c,
+            builder: (BuildContext context, _) => LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                return Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    ..._hearts.map((_Heart h) {
+                      final t = (h.startY - _c.value * h.speed) % 1.2;
+                      final y = 1.15 - t;
+                      final x =
+                          h.x + math.sin((h.phase + _c.value) * 6.28) * h.drift;
+                      return Positioned(
+                        left: x * constraints.maxWidth,
+                        top: y * constraints.maxHeight,
+                        child: Opacity(
+                          // fade in at the bottom, out at the top
+                          opacity: (y < 0.02 || y > 1.02)
+                              ? 0
+                              : (widget.speckOpacity *
+                                      (y > 0.92 ? (1.05 - y) / 0.13 : 1))
+                                  .clamp(0.0, 1.0),
+                          child: Text(h.glyph,
+                              style: TextStyle(fontSize: 18 * h.scale)),
+                        ),
+                      );
+                    }),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
-      ),
+        if (widget.child != null) widget.child!,
+      ],
     );
   }
 }
