@@ -68,6 +68,12 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Milk & Mocha cartoon artwork (see assets/characters/README.md).
+  # The folder is declared so dropping the four PNGs in is all that is needed
+  # for the bears to appear — no code change, no rebuild of the asset list.
+  assets:
+    - assets/characters/
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

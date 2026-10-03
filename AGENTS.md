@@ -25,6 +25,7 @@ lib/
   data/romance_content.dart  # quotes, care tips, moods, milestones (bilingual)
   design/romantic_tokens.dart # palette, gradients, radii, shadows, text styles
   models/                 # app_user, pairing, nudge, mood_entry, couple_stats (mirror future SQL)
+                          # bear_mood (Milk & Mocha emotion analysis, pure, unit-tested)
   services/               # storage_service.dart (LocalStorage)
                           # backend_services.dart (NudgeService/PairService interfaces + demo impls)
                           # home_widget_service.dart (pushes care data to the Android widget)
@@ -32,13 +33,15 @@ lib/
   screens/                # onboarding, home, pair, send_nudge, overlay, settings,
                           # stats, share_card, widget_mode
   widgets/                # romance_motion (mesh bg, floating hearts, fade-in, heartbeat)
+                          # bear_pair (Milk & Mocha cartoon couple + tap reactions)
                           # heart_burst + shine button, romantic_scaffold,
                           # nudge_overlay (signature animation), splash_screen, theme_card
   themes/widget_themes.dart
 android/app/src/main/kotlin/com/tapcare/app/
                           # MainActivity.kt, TapCareWidgetProvider.kt (RemoteViews widget)
 android/app/src/main/res/  # widget layouts, widget_bg drawables, tapcare_widget_info.xml
-scripts/verify.py         # static guard: imports resolve, hi/en keys, no stale ids
+scripts/verify.py         # static guard: imports resolve, hi/en keys, assets, no stale ids
+assets/characters/        # Milk & Mocha artwork (README.md lists the exact file names)
 docs/                     # ARCHITECTURE, DATA_MODEL, API, SETUP, PRODUCT_SPEC, MOBILE_BUILD
 env.example.txt           # all future keys (placeholders)
 .github/workflows/build-apk.yml

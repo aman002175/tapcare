@@ -5,8 +5,10 @@ import '../config/presets.dart';
 import '../config/strings.dart';
 import '../data/romance_content.dart';
 import '../design/romantic_tokens.dart';
+import '../models/bear_mood.dart';
 import '../models/nudge.dart';
 import '../state/app_state.dart';
+import '../widgets/bear_pair.dart';
 import '../widgets/heart_burst.dart';
 import '../widgets/romance_motion.dart';
 import 'overlay_screen.dart';
@@ -110,6 +112,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     final pair = state.pair;
     final stats = state.stats;
+    // Milk & Mocha: what the bears are feeling, read from the real nudge
+    // history plus the personal mood check-in.
+    final bears = BearMoodEngine.analyze(
+      nudges: state.nudges,
+      myId: profile.id,
+      paired: pair != null,
+      moods: state.moods,
+    );
     final accent = Rom.gradientByName(state.accentName);
     final favPresets = kPresets
         .where((PresetNudge p) => state.favorites.contains(p.id))
@@ -385,6 +395,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         child: _TipCard(
                           title: s.t('careTip'),
                           text: RomanceContent.tipOfTheDay(state.locale),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ---- Milk & Mocha ----
+                      // Sits below the fold on purpose: it is a reward for
+                      // scrolling, not something that pushes the daily ritual
+                      // down the page.
+                      FadeSlideIn(
+                        delayMs: 340,
+                        child: BearPair(
+                          mood: bears,
+                          locale: state.locale,
                         ),
                       ),
                       const SizedBox(height: 22),

@@ -162,9 +162,23 @@ class TapCareApp extends ConsumerWidget {
         fontFamily: 'Roboto',
       ),
       // Onboarding before the router stack on first launch.
-      builder: (BuildContext context, Widget? child) => firstRun
-          ? const OnboardingScreen()
-          : (child ?? const SizedBox.shrink()),
+      //
+      // The swap used to be instantaneous, so filling in the name made the
+      // onboarding page blink out. AnimatedSwitcher cross-fades: onboarding
+      // fades out while the router stack fades in. The two children carry
+      // different keys (onboarding has one, the Navigator does not), which is
+      // what makes the switcher treat them as different children.
+      builder: (BuildContext context, Widget? child) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 520),
+        reverseDuration: const Duration(milliseconds: 320),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (Widget animated, Animation<double> anim) =>
+            FadeTransition(opacity: anim, child: animated),
+        child: firstRun
+            ? const OnboardingScreen(key: ValueKey<String>('onboarding'))
+            : (child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }

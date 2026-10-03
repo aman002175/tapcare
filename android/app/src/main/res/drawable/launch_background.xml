@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Branded launch screen: blush background + centred heart logo, so the
-     cold start no longer flashes a blank white window before Flutter runs. -->
+<!-- Launch window background: blush only.
+
+     The centred heart logo used to live here and, together with the Android
+     12 splash icon, produced a second "plain" opening screen before the real
+     text-based Flutter splash appeared. The heart is gone from the native
+     layer on purpose — the one and only opening screen is the Flutter splash
+     (gradient circle + "TapCare" + tagline). -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/tapcare_blush" />
-    <item
-        android:width="88dp"
-        android:height="88dp"
-        android:gravity="center"
-        android:drawable="@drawable/ic_tapcare_heart" />
 </layer-list>

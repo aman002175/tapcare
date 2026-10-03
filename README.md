@@ -31,7 +31,9 @@ interfaces in `lib/services/backend_services.dart` are ready for them.
   haptics, and a heart-burst celebration on "Seen ❤️"
 - Recent nudges: last 20 per pair, seen/unseen badges — no chat, no feed
 - Long-press any recent nudge to replay the overlay
-- **Branded launch screen**: splash + pulsing heart + animated loading dots
+- **Branded launch screen**: one opening screen only — a text-based splash
+  (gradient circle, "TapCare", tagline, loading dots). The plain Android 12
+  system splash icon is switched off, so nothing plain flashes before it
 - **Real home-screen widget**: resizable (small ↔ large), animated reveal, and
   it shows the partner's latest nudge, love meter, streak and daily quote.
   Add it via *long-press home screen → Widgets → TapCare*.
@@ -48,6 +50,12 @@ interfaces in `lib/services/backend_services.dart` are ready for them.
 - **Stats screen**: sent/received/seen breakdown, love balance bar, milestones
 
 **Pretty & playful**
+- **Milk & Mocha**: the couple's own cartoon bears, always breathing, swaying
+  or sulking. The mood between the two of you is analysed from the real data —
+  nudges moving *both* ways = love, a long quiet spell = sad, activity only from
+  one side = sulky, a nudge that was never opened = angry — and your own daily
+  mood check-in can pull them down too. Tap them for a kiss / heart pile / gift /
+  peek reaction. Artwork lives in `assets/characters/` (see the README there)
 - Animated mesh background + floating hearts ambience on every screen
 - 5 accent gradient themes (Blush, Sunset, Lavender, Mint, Night)
 - 6 widget themes: 3 free, 3 premium (locked, "Coming soon ₹199" stub)

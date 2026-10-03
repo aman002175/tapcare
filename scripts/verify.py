@@ -79,8 +79,20 @@ for path in dart_files():
         if key not in entries:
             failures.append(f"{rel(path)}: t('{key}') has no hi/en entry")
 
-# keys built dynamically via s.t(currentSlot().key())
-DYNAMIC = {"morning", "afternoon", "evening", "night"}
+# keys built dynamically via s.t(currentSlot().key()) and the bear mood
+# switch in lib/widgets/bear_pair.dart
+DYNAMIC = {
+    "morning",
+    "afternoon",
+    "evening",
+    "night",
+    "bearMoodLoving",
+    "bearMoodHappy",
+    "bearMoodCalm",
+    "bearMoodSulky",
+    "bearMoodSad",
+    "bearMoodAngry",
+}
 for key in DYNAMIC:
     if key not in entries:
         failures.append(f"dynamic key '{key}' missing from strings.dart")
@@ -113,7 +125,41 @@ for base, _dirs, names in os.walk(os.path.join(ROOT, "android")):
                     f"{rel(p)}: android:{attr} is not a real Android attribute"
                 )
 
-# ---- 5. no leftovers from the old name ----------------------------------
+# ---- 5. declared assets must exist on disk -------------------------------
+# `flutter build` fails late and with an opaque message when pubspec points at
+# a folder that is not in the repo, so it is checked here instead.
+PUBSPEC = os.path.join(ROOT, "pubspec.yaml")
+pubspec_src = open(PUBSPEC, encoding="utf-8").read()
+for entry in re.findall(r"^\s*-\s+(assets/\S+)\s*$", pubspec_src, re.M):
+    path = os.path.join(ROOT, entry.rstrip("/"))
+    if not os.path.isdir(path):
+        failures.append(f"pubspec.yaml: asset entry '{entry}' is not in the repo")
+
+# Every artwork path the bears ask for must be a real file, or at least be
+# documented in the folder README. The artwork PNGs are added by hand, so this
+# is what catches a typo that would otherwise silently ship a placeholder.
+ART_RE = re.compile(r"assets/[A-Za-z0-9_./-]+")
+art_needed = set()
+for path in dart_files():
+    with open(path, encoding="utf-8") as fh:
+        art_needed.update(ART_RE.findall(fh.read()))
+for art in sorted(art_needed):
+    folder = os.path.dirname(os.path.join(ROOT, art))
+    if not os.path.isdir(folder):
+        failures.append(f"artwork '{art}' has no folder in the repo")
+        continue
+    if os.path.isfile(os.path.join(ROOT, art)):
+        continue
+    readme = os.path.join(folder, "README.md")
+    with open(readme, encoding="utf-8") as fh:
+        documented = fh.read()
+    if os.path.basename(art) not in documented:
+        failures.append(
+            f"artwork '{art}' is neither in the repo nor documented in "
+            f"{rel(readme)} \u2014 the bears would render the placeholder"
+        )
+
+# ---- 6. no leftovers from the old name ----------------------------------
 STALE = ("com.nudgebuddy", "package:nudgebuddy", "NudgeBuddyApp")
 for dirpath, dirs, names in os.walk(ROOT):
     dirs[:] = [d for d in dirs if d not in (".git", "build", ".dart_tool")]

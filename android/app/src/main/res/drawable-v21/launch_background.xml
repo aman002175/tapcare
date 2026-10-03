@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Branded launch screen for API 21+. -->
+<!-- Launch window background for API 21+: blush only, no heart logo.
+     See drawable/launch_background.xml for why. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/tapcare_blush" />
-    <item
-        android:width="88dp"
-        android:height="88dp"
-        android:gravity="center"
-        android:drawable="@drawable/ic_tapcare_heart" />
 </layer-list>

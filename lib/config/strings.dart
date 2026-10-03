@@ -193,5 +193,39 @@ class Strings {
     // ---- TapCare: reactions ----
     'reactTo': {'hi': 'जवाब दो', 'en': 'Reply with'},
     'reacted': {'hi': 'जवाब भेजा 💛', 'en': 'Reply sent 💛'},
+
+    // ---- TapCare: Milk & Mocha bears ----
+    'bearTapHint': {
+      'hi': 'बेयर पर टैप करो 💛',
+      'en': 'Tap the bears 💛',
+    },
+    'bearMoodLoving': {
+      'hi': 'बीच का माहौल प्यार भरा है 💗',
+      'en': 'The air between you two is full of love 💗',
+    },
+    'bearMoodHappy': {
+      'hi': 'दोनों खुश हैं — ऐसे ही चलता रहे 🌸',
+      'en': 'Both bears are happy — keep it up 🌸',
+    },
+    'bearMoodCalm': {
+      'hi': 'सब शांत है, प्यार चुपचाप बढ़ रहा है 🤍',
+      'en': 'All calm — love is quietly growing 🤍',
+    },
+    'bearMoodSulky': {
+      'hi': 'माहौल ठंडा है, एक नज़ भेज दो 💭',
+      'en': 'A little cool between you — send a nudge 💭',
+    },
+    'bearMoodSad': {
+      'hi': 'काफ़ी देर से बात नहीं, बेयर याद कर रहे हैं 🥺',
+      'en': 'It has been a long while — the bears miss you 🥺',
+    },
+    'bearMoodAngry': {
+      'hi': 'भेजा गया नज़ देखा नहीं गया 😤',
+      'en': 'A nudge came in and went unseen 😤',
+    },
+    'bearSolo': {
+      'hi': 'अकेले में ख्याल है — जल्दी जोड़ी बनाओ 💛',
+      'en': 'Thinking of you — make a pair soon 💛',
+    },
   };
 }
