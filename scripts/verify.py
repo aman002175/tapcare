@@ -125,6 +125,91 @@ for base, _dirs, names in os.walk(os.path.join(ROOT, "android")):
                     f"{rel(p)}: android:{attr} is not a real Android attribute"
                 )
 
+# ---- 4b. the native launch window stays artwork-free --------------------
+# Regression guard for the screen the user deleted: a big pink heart with no
+# text between the OS splash and the Flutter splash. Android 12 cannot skip its
+# splash screen, but the splash *icon* can be made invisible, so BOTH native
+# launch stages have to stay artwork-free — otherwise the app opens on a plain
+# heart again and never reaches the "TapCare" splash on the first frame.
+RES = os.path.join(ROOT, "android/app/src/main/res")
+BLANK_SPLASH_ICON = "@drawable/ic_tapcare_splash_blank"
+
+for rel_path in (
+    "drawable/launch_background.xml",
+    "drawable-v21/launch_background.xml",
+):
+    p = os.path.join(RES, rel_path)
+    raw = re.sub(r"<!--.*?-->", "", open(p, encoding="utf-8").read(), flags=re.S)
+    if "@drawable/" in raw:
+        failures.append(
+            f"{rel(p)}: must be blush only — any artwork here becomes a "
+            f"text-less heart screen before the Flutter splash"
+        )
+
+p31 = os.path.join(ROOT, "android/app/src/main/res/values-v31/styles.xml")
+raw31 = re.sub(r"<!--.*?-->", "", open(p31, encoding="utf-8").read(), flags=re.S)
+icons = re.findall(
+    r"android:windowSplashScreenAnimatedIcon\">([^<]+)<", raw31
+)
+if not icons:
+    failures.append(
+        f"{rel(p31)}: windowSplashScreenAnimatedIcon must be set explicitly to "
+        f"{BLANK_SPLASH_ICON}; omitted, Android 12 falls back to the launcher icon"
+    )
+for icon in icons:
+    if icon != BLANK_SPLASH_ICON:
+        failures.append(
+            f"{rel(p31)}: windowSplashScreenAnimatedIcon is '{icon}'; the only "
+            f"allowed icon is {BLANK_SPLASH_ICON} (invisible) — a heart or logo "
+            f"here is the text-less splash screen the user removed"
+        )
+
+# ---- 4c. project-owned res references must resolve ----------------------
+# aapt reports a dangling `@drawable/...` only at `processDebugResources`,
+# after a long wait. Only names this project owns (the `tapcare*` /
+# `ic_tapcare*` convention) are checked, so framework and AndroidX resources
+# can never false-positive.
+def res_definitions():
+    defined = set()
+    for folder in os.listdir(RES):
+        full = os.path.join(RES, folder)
+        if not os.path.isdir(full):
+            continue
+        kind = folder.split("-")[0]
+        if kind == "values":
+            # colors/strings/styles are declared by NAME inside values/*.xml,
+            # not by file name.
+            for n in os.listdir(full):
+                if not n.endswith(".xml"):
+                    continue
+                raw = open(os.path.join(full, n), encoding="utf-8").read()
+                raw = re.sub(r"<!--.*?-->", "", raw, flags=re.S)
+                for tag, name in re.findall(r'<(color|string|style)\s+name="([^"]+)"', raw):
+                    defined.add((tag, name))
+                    defined.add(("any", name))
+            continue
+        for n in os.listdir(full):
+            stem = n.split(".")[0]
+            defined.add((kind, stem))
+            defined.add(("any", stem))
+    return defined
+
+
+RES_DEFS = res_definitions()
+REF_RE = re.compile(r"@(drawable|mipmap|color|style|string|layout|xml)/([A-Za-z0-9_]+)")
+android_xml = []
+for base, _dirs, names in os.walk(os.path.join(ROOT, "android/app/src/main")):
+    for n in names:
+        if n.endswith(".xml"):
+            android_xml.append(os.path.join(base, n))
+for p in android_xml:
+    raw = re.sub(r"<!--.*?-->", "", open(p, encoding="utf-8").read(), flags=re.S)
+    for kind, name in REF_RE.findall(raw):
+        if not name.startswith(("tapcare", "ic_tapcare")):
+            continue
+        if (kind, name) not in RES_DEFS:
+            failures.append(f"{rel(p)}: @{kind}/{name} does not exist in res/")
+
 # ---- 5. declared assets must exist on disk -------------------------------
 # `flutter build` fails late and with an opaque message when pubspec points at
 # a folder that is not in the repo, so it is checked here instead.

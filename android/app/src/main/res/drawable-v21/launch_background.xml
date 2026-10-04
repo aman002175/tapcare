@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launch window for API 21+: blush background + the TapCare logo.
-     See drawable/launch_background.xml for why. -->
+<!-- Launch window for API 21+: blush only, no artwork.
+     See res/drawable/launch_background.xml for why the heart logo was removed. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/tapcare_blush" />
-    <item
-        android:width="96dp"
-        android:height="96dp"
-        android:gravity="center"
-        android:drawable="@drawable/ic_tapcare_logo" />
 </layer-list>

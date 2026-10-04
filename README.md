@@ -31,9 +31,10 @@ interfaces in `lib/services/backend_services.dart` are ready for them.
   haptics, and a heart-burst celebration on "Seen ❤️"
 - Recent nudges: last 20 per pair, seen/unseen badges — no chat, no feed
 - Long-press any recent nudge to replay the overlay
-- **One continuous opening screen**: the Android 12 splash shows the same
-  gradient-circle logo the Flutter splash draws, so the hand-off is invisible —
-  no plain heart, no blank frame. The Flutter splash then reveals the logo,
+- **One opening screen**: every native launch stage (Android 12 splash icon,
+  launch window) is a plain blush field with no artwork — a heart there read
+  as a second, text-less splash. The app opens straight into the Flutter
+  splash, which reveals the logo,
   "TapCare", the tagline and the loading dots
 - **Real home-screen widget**: resizable (small ↔ large), animated reveal, and
   it shows the partner's latest nudge, love meter, streak and daily quote.

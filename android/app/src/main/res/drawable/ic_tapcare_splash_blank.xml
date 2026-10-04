@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Invisible Android 12+ splash icon.
+
+     Android 12 ALWAYS draws one icon in the system splash: omit
+     `windowSplashScreenAnimatedIcon` and the platform falls back to the app
+     launcher icon. There is no way to remove the splash screen entirely, but
+     the icon can be made invisible, so the launch stage is a plain blush
+     field and the app opens straight into the Flutter splash
+     (gradient circle + "TapCare" + "बिना बोले, ख्याल" + "Care without words").
+
+     `android:windowSplashScreenIconBackgroundColor` is also set to the same
+     blush in values-v31/styles.xml, so no icon backdrop circle is visible
+     either. Do NOT replace this with a heart/logo drawable: that is exactly
+     the plain, text-less heart screen the user rejected. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#00000000" />
+    <size
+        android:width="1dp"
+        android:height="1dp" />
+</shape>

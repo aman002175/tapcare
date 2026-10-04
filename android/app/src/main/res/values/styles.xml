@@ -2,8 +2,10 @@
 <resources>
     <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is off -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <!-- Branded splash: blush background + centred heart.
-             Shown until Flutter paints its first frame. -->
+        <!-- Plain blush window shown until Flutter paints its first frame.
+             Deliberately artwork-free: any heart/logo here showed up as a
+             text-less second splash. The logo + text live in the Flutter
+             splash (lib/widgets/splash_screen.dart). -->
         <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
 

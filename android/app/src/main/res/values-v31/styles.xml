@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Android 12+ (API 31) system splash screen.
 
-     The user only wants ONE opening screen: the text-based Flutter splash
-     (gradient circle + "TapCare" + tagline). The OS splash used to draw a big
-     flat pink heart here, which read as a second, plainer splash.
+     The user wants exactly ONE opening screen: the text-based Flutter splash
+     (gradient circle + "TapCare" + "बिना बोले, ख्याल" + "Care without
+     words"). Android 12 refuses to skip its splash entirely, but the icon can
+     be made invisible, so the launch stage is a plain blush field with no
+     artwork at all.
 
-     Android 12 ALWAYS shows an icon in the splash — if
-     `windowSplashScreenAnimatedIcon` is omitted it falls back to the app
-     launcher icon, and pointing it at a transparent drawable leaves a blank
-     pale screen that reads as a white flash.
-
-     So the icon is the real thing: the same gradient-circle heart the Flutter
-     splash draws (`ic_tapcare_logo`). System splash and in-app splash are then
-     one continuous opening scene — no plain heart, no blank frame between them.
+     Why the icon must be set EXPLICITLY:
+       * omitted  -> the platform falls back to the launcher icon, which
+                     rendered as a big flat pink heart with no text (the screen
+                     the user asked to delete);
+       * the old `ic_tapcare_logo` gradient circle -> also a heart with no
+                     text, just prettier;
+       * a transparent drawable -> invisible, so nothing shows.
+     Hence `ic_tapcare_splash_blank`, plus a blush icon background so the
+     system's icon backdrop circle is invisible too. `launch_background` is
+     blush-only for the same reason (see res/drawable/launch_background.xml).
 
      NOTE: there is no `android:windowSplashScreenIconBackgroundSize`
      platform attribute — only `...IconBackgroundColor`. An earlier revision
@@ -22,9 +26,11 @@
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:windowSplashScreenBackground">@color/tapcare_blush</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_tapcare_logo</item>
+        <!-- Invisible: never point this at a heart/logo, it becomes a second
+             text-less splash screen. -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_tapcare_splash_blank</item>
         <item name="android:windowSplashScreenIconBackgroundColor">@color/tapcare_blush</item>
-        <item name="android:windowSplashScreenAnimationDuration">200</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
     </style>
 
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
